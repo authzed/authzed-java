@@ -1,0 +1,48 @@
+plugins {
+    id "java-library"
+    id "com.google.protobuf" version "0.8.16"
+}
+
+repositories {
+    // The Google mirror is less flaky than mavenCentral()
+    maven { url "https://maven-central.storage-download.googleapis.com/maven2/" }
+    mavenCentral()
+    mavenLocal()
+}
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+def grpcVersion = "1.39.0"
+def protocVersion = "3.17.3"
+def authzedProtoCommit = "12963402f4474d528d5c14a5162db287"
+def bufDir = "${buildDir}/buf"
+
+dependencies {
+    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+    implementation "io.grpc:grpc-stub:${grpcVersion}"
+    runtimeOnly "io.grpc:grpc-netty-shaded:${grpcVersion}"
+    compileOnly "org.apache.tomcat:annotations-api:6.0.53"
+}
+
+task validateProtos(type: Exec) {
+  mkdir bufDir
+  commandLine("buf", "beta", "mod", "export", "buf.build/beta/protoc-gen-validate", "-o", bufDir)
+}
+
+task authzedProtos(type: Exec) {
+  dependsOn validateProtos
+  commandLine("buf", "beta", "mod", "export", "buf.build/authzed/api:${authzedProtoCommit}", "-o", bufDir)
+}
+
+sourceSets { main { proto { srcDir bufDir } } }
+
+protobuf {
+  //generatedFilesBaseDir = "${srcDir}"
+  protoc { artifact = "com.google.protobuf:protoc:${protocVersion}" }
+  plugins { grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}" } }
+  generateProtoTasks { 
+    ofSourceSet("main").each { task -> task.dependsOn authzedProtos }
+    all()*.plugins { grpc {} }
+  }
+}
