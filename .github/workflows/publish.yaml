@@ -17,9 +17,10 @@ jobs:
     - uses: "bufbuild/buf-setup-action@v0.2.0"
       with:
         version: "0.43.2"
-    - name: "Gradle Build"
-      run: "./gradlew build"
-    - name: "Gradle Publish"
-      run: "./gradlew publish"
     - name: "Publish to Sonatype"
+      env:
+        ORG_GRADLE_PROJECT_signingKey: "${{ secrets.SIGNING_KEY_ARMORED }}"
+        ORG_GRADLE_PROJECT_signingPassword: "${{ secrets.SIGNING_PASSWORD }}"
+        ORG_GRADLE_PROJECT_sonatypeUsername: "${{ secrets.SONATYPE_USERNAME }}"
+        ORG_GRADLE_PROJECT_sonatypePassword: "${{ secrets.SONATYPE_PASSWORD }}"
       run: "ORG_GRADLE_PROJECT_release=${GITHUB_REF#ref/tags/} ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository"
