@@ -15,12 +15,34 @@ Supported API versions:
 
 ## Installation
 
-```
-TODO(jzelinskie): publish to maven
+If you're using [Gradle], add the following to your `build.gradle`:
+
+[Gradle]: https://gradle.org
+
+```groovy
+dependencies {
+  implementation "com.authzed.api:authzed:0.0.1"
+}
 ```
 
-## Example
+## Example Usage
 
 ```java
 // TODO(jzelinskie): write an example
 ```
+
+## Building
+
+This project requires [buf] in order to download Protobuf definitions.
+
+[buf]: https://docs.buf.build/installation
+
+Building is the typical [Gradle wrapper] workflow:
+
+[Gradle wrapper]: https://docs.gradle.org/current/userguide/gradle_wrapper.html
+
+```sh
+./gradlew build
+```
+
+After a successful build, compiled, source, and javadoc jars are located in `build/libs/`.

@@ -1,17 +1,81 @@
 plugins {
-    id "java-library"
-    id "com.google.protobuf" version "0.8.16"
+  id "java-library"
+  id "maven-publish"
+  id "signing"
+
+  id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
+  id "com.google.protobuf" version "0.8.16"
 }
 
 repositories {
-    // The Google mirror is less flaky than mavenCentral()
-    maven { url "https://maven-central.storage-download.googleapis.com/maven2/" }
-    mavenCentral()
-    mavenLocal()
+  // The Google mirror is less flaky than mavenCentral()
+  maven { url "https://maven-central.storage-download.googleapis.com/maven2/" }
+  mavenCentral()
+  mavenLocal()
+}
+
+group = "com.authzed.api"
+version = project.hasProperty("release") ? findProperty("release") : "0.0.0-SNAPSHOT"
+
+nexusPublishing { repositories { sonatype {
+  // If registered in Sonatype after 24 Feb 2021, you must explicitly configure these:
+  nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+  snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+}}}
+
+publishing {
+  publications { authzed(MavenPublication) {
+    from components.java
+    pom {
+      name = "authzed"
+      description = "Authzed client library for Java"
+      url = "https://github.com/authzed/authzed-java"
+      licenses { license {
+          name = "The Apache License, Version 2.0"
+          url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      }}
+      developers { developer {
+        id = "jzelinskie"
+        name = "Jimmy Zelinskie"
+        email = "jimmy@authzed.com"
+      }}
+      scm {
+        connection = "scm:git:git://github.com/authzed/authzed-java.git"
+        developerConnection = "scm:git:ssh://github.com:authzed/authzed-java.git"
+        url = "https://github.com/authzed/authzed-java/tree/master"
+      }
+    }
+  }}
+
+  repositories { maven {
+    def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+    def snapshotsRepoURL = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+    def ossrhUsername = findProperty("ossrhUsername")
+    def ossrhPassword = findProperty("ossrhPassword")
+
+    name = "authzed"
+    url = project.hasProperty("release") ? releasesRepoUrl : snapshotsRepoUrl
+  }}
+}
+
+signing {
+  def signingKey = findProperty("signingKey")
+  def signingPassword = findProperty("signingPassword")
+  useInMemoryPgpKeys(signingKey, signingPassword)
+
+  sign publishing.publications.authzed
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
+
+java {
+  withJavadocJar()
+  withSourcesJar()
+}
+
+// All it does is complain about generated code.
+javadoc { options.addStringOption('Xdoclint:none', '-quiet') }
 
 def grpcVersion = "1.39.0"
 def protocVersion = "3.17.3"
@@ -20,10 +84,10 @@ def bufDir = "${buildDir}/buf"
 def protocPlatformTag = project.findProperty('protoc_platform') ? ":${protoc_platform}" : ""
 
 dependencies {
-    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
-    implementation "io.grpc:grpc-stub:${grpcVersion}"
-    runtimeOnly "io.grpc:grpc-netty-shaded:${grpcVersion}"
-    compileOnly "org.apache.tomcat:annotations-api:6.0.53"
+  implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+  implementation "io.grpc:grpc-stub:${grpcVersion}"
+  runtimeOnly "io.grpc:grpc-netty-shaded:${grpcVersion}"
+  compileOnly "org.apache.tomcat:annotations-api:6.0.53"
 }
 
 task validateProtos(type: Exec) {
@@ -36,10 +100,12 @@ task authzedProtos(type: Exec) {
   commandLine("buf", "beta", "mod", "export", "buf.build/authzed/api:${authzedProtoCommit}", "-o", bufDir)
 }
 
-sourceSets { main { proto { srcDir bufDir } } }
+sourceSets { main {
+  proto { srcDir bufDir }
+  java  { srcDir "$buildDir/generated" }
+}}
 
 protobuf {
-  //generatedFilesBaseDir = "${srcDir}"
   protoc { artifact = "com.google.protobuf:protoc:${protocVersion}${protocPlatformTag}" }
   plugins { grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}${protocPlatformTag}" } }
 
@@ -48,3 +114,8 @@ protobuf {
     all()*.plugins { grpc {} }
   }
 }
+
+tasks.named("jar") { manifest {
+  attributes("Implementation-Title": project.name,
+             "Implementation-Version": project.version)
+}}
