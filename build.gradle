@@ -83,9 +83,8 @@ java {
   withSourcesJar()
 }
 
-javadoc {
-  options.addStringOption('Xdoclint:none', '-quiet')
-}
+// All it does is complain about generated code.
+javadoc { options.addStringOption('Xdoclint:none', '-quiet') }
 
 def grpcVersion = "1.39.0"
 def protocVersion = "3.17.3"
