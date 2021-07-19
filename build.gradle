@@ -3,6 +3,8 @@ plugins {
     id "com.google.protobuf" version "0.8.16"
 }
 
+version = "0.0.1"
+
 repositories {
     // The Google mirror is less flaky than mavenCentral()
     maven { url "https://maven-central.storage-download.googleapis.com/maven2/" }
@@ -39,7 +41,6 @@ task authzedProtos(type: Exec) {
 sourceSets { main { proto { srcDir bufDir } } }
 
 protobuf {
-  //generatedFilesBaseDir = "${srcDir}"
   protoc { artifact = "com.google.protobuf:protoc:${protocVersion}${protocPlatformTag}" }
   plugins { grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}${protocPlatformTag}" } }
 
@@ -47,4 +48,11 @@ protobuf {
     ofSourceSet("main").each { task -> task.dependsOn authzedProtos }
     all()*.plugins { grpc {} }
   }
+}
+
+tasks.named('jar') {
+    manifest {
+        attributes('Implementation-Title': project.name,
+                   'Implementation-Version': project.version)
+    }
 }
