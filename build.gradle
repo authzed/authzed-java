@@ -15,7 +15,7 @@ repositories {
 }
 
 group = "com.authzed.api"
-version = project.hasProperty("release") ? "0.0.1" : "0.0.0-SNAPSHOT"
+version = project.hasProperty("release") ? findProperty("release") : "0.0.0-SNAPSHOT"
 
 nexusPublishing {
   repositories {

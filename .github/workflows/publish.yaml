@@ -15,4 +15,4 @@ jobs:
     - name: "Gradle Publish"
       run: "./gradlew publish"
     - name: "Publish to Sonatype"
-      run: "./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository"
+      run: "ORG_GRADLE_PROJECT_release=${GITHUB_REF#ref/tags/} ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository"
