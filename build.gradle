@@ -17,54 +17,45 @@ repositories {
 group = "com.authzed.api"
 version = project.hasProperty("release") ? findProperty("release") : "0.0.0-SNAPSHOT"
 
-nexusPublishing {
-  repositories {
-    sonatype {  // If registered in Sonatype after 24 Feb 2021, you must explicitly configure these:
-      nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-      snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
-    }
-  }
-}
+nexusPublishing { repositories { sonatype {
+  // If registered in Sonatype after 24 Feb 2021, you must explicitly configure these:
+  nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+  snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+}}}
 
 publishing {
-  publications {
-    authzed(MavenPublication) {
-      from components.java
-      pom {
-        name = "authzed"
-        description = "Authzed client library for Java"
-        url = "https://github.com/authzed/authzed-java"
-        licenses { license {
-            name = "The Apache License, Version 2.0"
-            url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
-        }}
-        developers {
-          developer {
-            id = "jzelinskie"
-            name = "Jimmy Zelinskie"
-            email = "jimmy@authzed.com"
-          }
-        }
-        scm {
-          connection = "scm:git:git://github.com/authzed/authzed-java.git"
-          developerConnection = "scm:git:ssh://github.com:authzed/authzed-java.git"
-          url = "https://github.com/authzed/authzed-java/tree/master"
-        }
+  publications { authzed(MavenPublication) {
+    from components.java
+    pom {
+      name = "authzed"
+      description = "Authzed client library for Java"
+      url = "https://github.com/authzed/authzed-java"
+      licenses { license {
+          name = "The Apache License, Version 2.0"
+          url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      }}
+      developers { developer {
+        id = "jzelinskie"
+        name = "Jimmy Zelinskie"
+        email = "jimmy@authzed.com"
+      }}
+      scm {
+        connection = "scm:git:git://github.com/authzed/authzed-java.git"
+        developerConnection = "scm:git:ssh://github.com:authzed/authzed-java.git"
+        url = "https://github.com/authzed/authzed-java/tree/master"
       }
     }
-  }
+  }}
 
-  repositories {
-    maven {
-      def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-      def snapshotsRepoURL = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-      def ossrhUsername = findProperty("ossrhUsername")
-      def ossrhPassword = findProperty("ossrhPassword")
+  repositories { maven {
+    def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+    def snapshotsRepoURL = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+    def ossrhUsername = findProperty("ossrhUsername")
+    def ossrhPassword = findProperty("ossrhPassword")
 
-      name = "authzed"
-      url = project.hasProperty("release") ? releasesRepoUrl : snapshotsRepoUrl
-    }
-  }
+    name = "authzed"
+    url = project.hasProperty("release") ? releasesRepoUrl : snapshotsRepoUrl
+  }}
 }
 
 signing {
@@ -124,9 +115,7 @@ protobuf {
   }
 }
 
-tasks.named("jar") {
-    manifest {
-        attributes("Implementation-Title": project.name,
-                   "Implementation-Version": project.version)
-    }
-}
+tasks.named("jar") { manifest {
+  attributes("Implementation-Title": project.name,
+             "Implementation-Version": project.version)
+}}
