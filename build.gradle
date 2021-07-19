@@ -17,6 +17,7 @@ def grpcVersion = "1.39.0"
 def protocVersion = "3.17.3"
 def authzedProtoCommit = "12963402f4474d528d5c14a5162db287"
 def bufDir = "${buildDir}/buf"
+def protocPlatformTag = project.findProperty('protoc_platform') ? ":${protoc_platform}" : ""
 
 dependencies {
     implementation "io.grpc:grpc-protobuf:${grpcVersion}"
@@ -39,9 +40,10 @@ sourceSets { main { proto { srcDir bufDir } } }
 
 protobuf {
   //generatedFilesBaseDir = "${srcDir}"
-  protoc { artifact = "com.google.protobuf:protoc:${protocVersion}" }
-  plugins { grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}" } }
-  generateProtoTasks { 
+  protoc { artifact = "com.google.protobuf:protoc:${protocVersion}${protocPlatformTag}" }
+  plugins { grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}${protocPlatformTag}" } }
+
+  generateProtoTasks {
     ofSourceSet("main").each { task -> task.dependsOn authzedProtos }
     all()*.plugins { grpc {} }
   }
