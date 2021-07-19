@@ -23,4 +23,7 @@ jobs:
         ORG_GRADLE_PROJECT_signingPassword: "${{ secrets.SIGNING_PASSWORD }}"
         ORG_GRADLE_PROJECT_sonatypeUsername: "${{ secrets.SONATYPE_USERNAME }}"
         ORG_GRADLE_PROJECT_sonatypePassword: "${{ secrets.SONATYPE_PASSWORD }}"
-      run: "ORG_GRADLE_PROJECT_release=${GITHUB_REF#ref/tags/} ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository"
+      run: |
+        export ORG_GRADLE_PROJECT_release=${GITHUB_REF#ref/tags/}
+        echo $ORG_GRADLE_PROJECT_release
+        ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository"
