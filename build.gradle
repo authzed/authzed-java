@@ -49,7 +49,7 @@ publishing {
 
   repositories { maven {
     def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-    def snapshotsRepoURL = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+    def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
     def ossrhUsername = findProperty("ossrhUsername")
     def ossrhPassword = findProperty("ossrhPassword")
 
