@@ -3,7 +3,7 @@
  */
 package demo;
 
-import com.authzed.grpcutil.ClientToken;
+import com.authzed.grpcutil.BearerToken;
 import com.authzed.api.v0.ACLServiceGrpc;
 import com.authzed.api.v0.AclService;
 import com.authzed.api.v0.Core;
@@ -15,9 +15,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-// Installation
-// https://search.maven.org/artifact/com.authzed.api/authzed
 
 public class App {
     private static final Logger logger = Logger.getLogger(App.class.getName());
@@ -39,9 +36,9 @@ public class App {
                 .build();
         try {
             App client = new App(channel);
-//            client.write();
-//            client.read();
-//            client.relationship();
+            client.writeSchema();
+            client.readSchema();
+            client.relationship();
             client.check();
         } finally {
             try {
@@ -52,7 +49,7 @@ public class App {
         }
     }
 
-    public String read() {
+    public String readSchema() {
         logger.info("Reading schema...");
         Schema.ReadSchemaRequest request = Schema.ReadSchemaRequest
                 .newBuilder()
@@ -61,7 +58,7 @@ public class App {
         Schema.ReadSchemaResponse response;
         try {
             response = blockingStub
-                    .withCallCredentials(new ClientToken(token))
+                    .withCallCredentials(new BearerToken(token))
                     .readSchema(request);
         } catch (Exception e) {
             logger.log(Level.WARNING, "RPC failed: {0}", e.getMessage());
@@ -71,7 +68,7 @@ public class App {
         return response.toString();
     }
 
-    public String write() {
+    public String writeSchema() {
         logger.info("Writing schema...");
         String schema = """
                 definition thelargeapp/article {
@@ -90,7 +87,7 @@ public class App {
         Schema.WriteSchemaResponse response;
         try {
             response = blockingStub
-                    .withCallCredentials(new ClientToken(token))
+                    .withCallCredentials(new BearerToken(token))
                     .writeSchema(request);
         } catch (Exception e) {
             logger.log(Level.WARNING, "RPC failed: {0}", e.getMessage());
@@ -120,7 +117,7 @@ public class App {
         AclService.WriteResponse response;
         try {
             response = v0blockingStub
-                    .withCallCredentials(new ClientToken(token))
+                    .withCallCredentials(new BearerToken(token))
                     .write(request);
         } catch (Exception e) {
             logger.log(Level.WARNING, "RPC failed: {0}", e.getMessage());
@@ -142,7 +139,7 @@ public class App {
         AclService.CheckResponse response;
         try {
             response = v0blockingStub
-                    .withCallCredentials(new ClientToken(token))
+                    .withCallCredentials(new BearerToken(token))
                     .check(request);
         } catch (Exception e) {
             logger.log(Level.WARNING, "RPC failed: {0}", e.getMessage());
