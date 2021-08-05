@@ -103,6 +103,7 @@ task authzedProtos(type: Exec) {
 sourceSets { main {
   proto { srcDir bufDir }
   java  { srcDir "$buildDir/generated" }
+  java  { srcDir "$buildDir/src" }
 }}
 
 protobuf {
