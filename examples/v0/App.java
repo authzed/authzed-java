@@ -1,14 +1,12 @@
 /*
  * Authzed API examples
  */
-package demo;
+package v0;
 
 import com.authzed.grpcutil.BearerToken;
 import com.authzed.api.v0.ACLServiceGrpc;
 import com.authzed.api.v0.AclService;
 import com.authzed.api.v0.Core;
-import com.authzed.api.v1alpha1.Schema;
-import com.authzed.api.v1alpha1.SchemaServiceGrpc;
 import io.grpc.*;
 
 import java.util.concurrent.Executor;
@@ -21,7 +19,6 @@ public class App {
     private static final String target = "grpc.authzed.com:443";
     private static final String token = "tc_test_def_token";
 
-    private final SchemaServiceGrpc.SchemaServiceBlockingStub blockingStub;
     private final ACLServiceGrpc.ACLServiceBlockingStub v0blockingStub;
 
     public App(Channel channel) {
@@ -36,8 +33,6 @@ public class App {
                 .build();
         try {
             App client = new App(channel);
-            client.writeSchema();
-            client.readSchema();
             client.relationship();
             client.check();
         } finally {
@@ -47,54 +42,6 @@ public class App {
                 // Uh oh!
             }
         }
-    }
-
-    public String readSchema() {
-        logger.info("Reading schema...");
-        Schema.ReadSchemaRequest request = Schema.ReadSchemaRequest
-                .newBuilder()
-                .addObjectDefinitionsNames("thelargeapp/article")
-                .build();
-        Schema.ReadSchemaResponse response;
-        try {
-            response = blockingStub
-                    .withCallCredentials(new BearerToken(token))
-                    .readSchema(request);
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "RPC failed: {0}", e.getMessage());
-            return "";
-        }
-        logger.info("Greeting: " + response.toString());
-        return response.toString();
-    }
-
-    public String writeSchema() {
-        logger.info("Writing schema...");
-        String schema = """
-                definition thelargeapp/article {
-                	relation author: thelargeapp/user
-                	relation commenter: thelargeapp/user
-                	
-                	permission can_comment = commenter + author
-                }
-                                
-                definition thelargeapp/user {}
-                """;
-        Schema.WriteSchemaRequest request = Schema.WriteSchemaRequest
-                .newBuilder()
-                .setSchema(schema)
-                .build();
-        Schema.WriteSchemaResponse response;
-        try {
-            response = blockingStub
-                    .withCallCredentials(new BearerToken(token))
-                    .writeSchema(request);
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "RPC failed: {0}", e.getMessage());
-            return "";
-        }
-        logger.info("Response: " + response.toString());
-        return response.toString();
     }
 
     public String relationship() {
