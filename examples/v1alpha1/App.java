@@ -21,8 +21,8 @@ public class App {
     private final SchemaServiceGrpc.SchemaServiceBlockingStub blockingStub;
 
     public App(Channel channel) {
-        blockingStub = SchemaServiceGrpc.newBlockingStub(channel);
-        v0blockingStub = ACLServiceGrpc.newBlockingStub(channel);
+        blockingStub = SchemaServiceGrpc.newBlockingStub(channel)
+                        .withCallCredentials(new BearerToken(token));
     }
 
     public static void main(String[] args) {
@@ -51,9 +51,7 @@ public class App {
                 .build();
         Schema.ReadSchemaResponse response;
         try {
-            response = blockingStub
-                    .withCallCredentials(new BearerToken(token))
-                    .readSchema(request);
+            response = blockingStub.readSchema(request);
         } catch (Exception e) {
             logger.log(Level.WARNING, "RPC failed: {0}", e.getMessage());
             return "";
@@ -80,9 +78,7 @@ public class App {
                 .build();
         Schema.WriteSchemaResponse response;
         try {
-            response = blockingStub
-                    .withCallCredentials(new BearerToken(token))
-                    .writeSchema(request);
+            response = blockingStub.writeSchema(request);
         } catch (Exception e) {
             logger.log(Level.WARNING, "RPC failed: {0}", e.getMessage());
             return "";

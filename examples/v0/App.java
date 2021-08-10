@@ -22,8 +22,8 @@ public class App {
     private final ACLServiceGrpc.ACLServiceBlockingStub v0blockingStub;
 
     public App(Channel channel) {
-        blockingStub = SchemaServiceGrpc.newBlockingStub(channel);
-        v0blockingStub = ACLServiceGrpc.newBlockingStub(channel);
+        v0blockingStub = ACLServiceGrpc.newBlockingStub(channel)
+                            .withCallCredentials(new BearerToken(token));
     }
 
     public static void main(String[] args) {
@@ -63,9 +63,7 @@ public class App {
 
         AclService.WriteResponse response;
         try {
-            response = v0blockingStub
-                    .withCallCredentials(new BearerToken(token))
-                    .write(request);
+            response = v0blockingStub.write(request);
         } catch (Exception e) {
             logger.log(Level.WARNING, "RPC failed: {0}", e.getMessage());
             return "";
@@ -85,9 +83,7 @@ public class App {
                 .build();
         AclService.CheckResponse response;
         try {
-            response = v0blockingStub
-                    .withCallCredentials(new BearerToken(token))
-                    .check(request);
+            response = v0blockingStub.check(request);
         } catch (Exception e) {
             logger.log(Level.WARNING, "RPC failed: {0}", e.getMessage());
             return "";
