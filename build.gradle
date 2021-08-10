@@ -92,12 +92,12 @@ dependencies {
 
 task validateProtos(type: Exec) {
   mkdir bufDir
-  commandLine("buf", "beta", "mod", "export", "buf.build/beta/protoc-gen-validate", "-o", bufDir)
+  commandLine("buf", "export", "--exclude-imports", "buf.build/beta/protoc-gen-validate", "-o", bufDir)
 }
 
 task authzedProtos(type: Exec) {
   dependsOn validateProtos
-  commandLine("buf", "beta", "mod", "export", "buf.build/authzed/api:${authzedProtoCommit}", "-o", bufDir)
+  commandLine("buf", "export", "--exclude-imports", "buf.build/authzed/api:${authzedProtoCommit}", "-o", bufDir)
 }
 
 sourceSets { main {
