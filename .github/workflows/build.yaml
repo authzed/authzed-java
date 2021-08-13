@@ -23,7 +23,7 @@ jobs:
         java-version: "${{ matrix.java }}"
     - uses: "bufbuild/buf-setup-action@v0.2.0"
       with:
-        version: "0.43.2"
+        version: "0.48.2"
     - uses: "gradle/wrapper-validation-action@v1"
     - name: "Gradle Build"
       run: "./gradlew build"
