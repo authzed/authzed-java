@@ -79,7 +79,7 @@ javadoc { options.addStringOption('Xdoclint:none', '-quiet') }
 
 def grpcVersion = "1.39.0"
 def protocVersion = "3.17.3"
-def authzedProtoCommit = "12963402f4474d528d5c14a5162db287"
+def authzedProtoCommit = "47e8bd10f0614fed8a7a0e26cab74e7b"
 def bufDir = "${buildDir}/buf"
 def protocPlatformTag = project.findProperty('protoc_platform') ? ":${protoc_platform}" : ""
 
@@ -92,11 +92,17 @@ dependencies {
 
 task validateProtos(type: Exec) {
   mkdir bufDir
-  commandLine("buf", "export", "--exclude-imports", "buf.build/beta/protoc-gen-validate", "-o", bufDir)
+  commandLine("buf", "export", "--exclude-imports", "buf.build/envoyproxy/protoc-gen-validate", "-o", bufDir)
+}
+
+task gatewayProtos(type: Exec) {
+  mkdir bufDir
+  commandLine("buf", "export", "--exclude-imports", "buf.build/grpc-ecosystem/grpc-gateway", "-o", bufDir)
 }
 
 task authzedProtos(type: Exec) {
   dependsOn validateProtos
+  dependsOn gatewayProtos
   commandLine("buf", "export", "--exclude-imports", "buf.build/authzed/api:${authzedProtoCommit}", "-o", bufDir)
 }
 
