@@ -83,6 +83,12 @@ def authzedProtoCommit = "47e8bd10f0614fed8a7a0e26cab74e7b"
 def bufDir = "${buildDir}/buf"
 def protocPlatformTag = project.findProperty('protoc_platform') ? ":${protoc_platform}" : ""
 
+sourceSets { main {
+  proto { srcDir bufDir }
+  java  { srcDir "$buildDir/generated" }
+  java  { srcDir "$buildDir/src" }
+}}
+
 dependencies {
   implementation "io.grpc:grpc-protobuf:${grpcVersion}"
   implementation "io.grpc:grpc-stub:${grpcVersion}"
@@ -106,12 +112,6 @@ task authzedProtos(type: Exec) {
   commandLine("buf", "export", "--exclude-imports", "buf.build/authzed/api:${authzedProtoCommit}", "-o", bufDir)
 }
 
-sourceSets { main {
-  proto { srcDir bufDir }
-  java  { srcDir "$buildDir/generated" }
-  java  { srcDir "$buildDir/src" }
-}}
-
 protobuf {
   protoc { artifact = "com.google.protobuf:protoc:${protocVersion}${protocPlatformTag}" }
   plugins { grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}${protocPlatformTag}" } }
@@ -126,3 +126,30 @@ tasks.named("jar") { manifest {
   attributes("Implementation-Title": project.name,
              "Implementation-Version": project.version)
 }}
+
+sourceSets {
+  intTest {
+    compileClasspath += sourceSets.main.output
+    runtimeClasspath += sourceSets.main.output
+  }
+}
+
+configurations {
+    intTestImplementation.extendsFrom implementation
+    intTestRuntimeOnly.extendsFrom runtimeOnly
+}
+
+dependencies {
+  intTestImplementation "junit:junit:4.13"
+}
+
+tasks.register('integrationTest', Test) {
+    useJUnit()
+
+    description = 'Runs integration tests.'
+    group = 'verification'
+
+    testClassesDirs = sourceSets.intTest.output.classesDirs
+    classpath = sourceSets.intTest.runtimeClasspath
+    shouldRunAfter test
+}
