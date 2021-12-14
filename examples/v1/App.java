@@ -15,6 +15,7 @@ import com.authzed.api.v1.Core.ZedToken;
 import com.authzed.api.v1.PermissionService;
 import com.authzed.api.v1.PermissionService.CheckPermissionRequest;
 import com.authzed.api.v1.PermissionService.Consistency;
+import com.authzed.api.v1.PermissionService.CheckPermissionResponse.Permissionship;
 import com.authzed.api.v1.PermissionsServiceGrpc;
 import com.authzed.api.v1.SchemaServiceGrpc;
 import com.authzed.api.v1.SchemaServiceOuterClass.ReadSchemaRequest;
@@ -53,13 +54,18 @@ public class App {
                 .build();
         try {
             App client = new App(channel);
+
             client.writeSchema();
+
             client.readSchema();
+
             String tokenVal = client.writeRelationship();
-            client.check(
+
+            Permissionship result = client.check(
                     ZedToken.newBuilder()
                             .setToken(tokenVal)
                             .build());
+            logger.log(Level.INFO, "Check result: {0}", result);
         } finally {
             try {
                 channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
@@ -153,7 +159,7 @@ public class App {
         return response.getWrittenAt().getToken();
     }
 
-    public String check(ZedToken zedToken) {
+    public Permissionship check(ZedToken zedToken) {
         logger.info("Checking...");
 
         PermissionService.CheckPermissionRequest request = CheckPermissionRequest.newBuilder()
@@ -185,6 +191,6 @@ public class App {
             return "";
         }
         logger.info("Response: " + response.toString());
-        return response.toString();
+        return response.getPermissionship();
     }
 }
