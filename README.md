@@ -1,6 +1,6 @@
 # Authzed Java Client
 
-[![Maven Metadata](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fcom%2Fauthzed%2Fapi%2Fauthzed%2Fmaven-metadata.xml)](https://search.maven.org/artifact/com.authzed.api/authzed/0.0.1/jar)
+[![Maven Metadata](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fcom%2Fauthzed%2Fapi%2Fauthzed%2Fmaven-metadata.xml)](https://search.maven.org/artifact/com.authzed.api/authzed/0.1.0/jar)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![Build Status](https://github.com/authzed/authzed-java/workflows/build/badge.svg)](https://github.com/authzed/authzed-java/actions)
 [![Mailing List](https://img.shields.io/badge/email-google%20groups-4285F4)](https://groups.google.com/g/authzed-oss)
@@ -49,7 +49,7 @@ Most commonly, if you are using [Maven] you can add the following to your pom.xm
 <dependency>
   <groupId>com.authzed.api</groupId>
   <artifactId>authzed</artifactId>
-  <version>0.0.1</version>
+  <version>0.1.0</version>
 </dependency>
 ```
 
@@ -61,10 +61,10 @@ Most commonly, if you are using [Maven] you can add the following to your pom.xm
 
 Because of how [grpc-java] is designed, there is little in terms of abstraction over the gRPC APIs underpinning Authzed.
 A `ManagedChannel` will establish a connection to Authzed that can be shared with _stubs_ for each gRPC service.
-In order to successfully authenticate with the API, you will have to provide a [Bearer Token] with your own API Token from the [Authzed dashboard] in place of `t_your_token_here_1234567deadbeef` as CallCredentials for each stub: 
+In order to successfully authenticate with the API, you will have to provide a [Bearer Token] with your own API Token from the [Authzed dashboard] in place of `t_your_token_here_1234567deadbeef` as CallCredentials for each stub:
 
 ```java
-import com.authzed.api.v0.ACLServiceGrpc;
+import com.authzed.api.v1.PermissionsServiceGrpc;
 import com.authzed.grpcutil.BearerToken;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -75,8 +75,8 @@ ManagedChannel channel = ManagedChannelBuilder
       .forTarget("grpc.authzed.com:443")
       .useTransportSecurity()
       .build();
-ACLServiceGrpc.ACLServiceBlockingStub aclStub = ACLServiceGrpc.newBlockingStub(channel)
-      .withCallCredentials(new BearerToken("t_your_token_here_1234567deadbeef");
+PermissionsServiceGrpc.PermissionsServiceBlockingStub permissionsService = PermissionsServiceGrpc.newBlockingStub(channel)
+      .withCallCredentials(new BearerToken("t_your_token_here_1234567deadbeef"));
 ```
 
 ### Performing an API call
@@ -90,35 +90,32 @@ Because of the verbosity of these types, we recommend writing your own functions
 [Authzed Protobuf Documentation]: https://buf.build/authzed/api/docs/main
 
 ```java
-import com.authzed.api.v0.Core;
-import com.authzed.api.v0.AclService;
-
 ...
 
-Core.User emilia = Core.User.newBuilder().setUserset(
-      Core.ObjectAndRelation
-          .setNamespace("blog/user")
-          .setObjectId("emilia")
-          .setRelation("...")
-          .build();
-).build();
-
-Core.ObjectAndRelation post1Reader = Core.ObjectAndRelation
-      .newBuilder()
-      .setNamespace("blog/post")
-      .setObjectId("1")
-      .setRelation("read")
-      .build();
-
-AclService.CheckRequest request = AclService.CheckRequest
-      .newBuilder()
-      .setUser(emilia)
-      .setTestUserset(post1Reader)
-      .build();
+PermissionService.CheckPermissionRequest request = CheckPermissionRequest.newBuilder()
+        .setConsistency(
+                Consistency.newBuilder()
+                        .setAtLeastAsFresh(zedToken)
+                        .build())
+        .setResource(
+                ObjectReference.newBuilder()
+                        .setObjectType("blog/post")
+                        .setObjectId("1")
+                        .build())
+        .setSubject(
+                SubjectReference.newBuilder()
+                        .setObject(
+                                ObjectReference.newBuilder()
+                                        .setObjectType("blog/user")
+                                        .setObjectId("emilia")
+                                        .build())
+                        .build())
+        .setPermission("read")
+        .build();
 
 // Is Emilia in the set of users that can read post #1?
 try {
-    AclService.CheckResponse response = aclStub.check(request);
+    PermissionService.CheckPermissionResponse response = permissionsService.checkPermission(request);
 } catch (Exception e) {
     logger.log(Level.WARNING, "RPC failed: {0}", e.getMessage());
 }
