@@ -14,6 +14,7 @@ This repository houses the Java client library for Authzed.
 Developers create a schema that models their permissions requirements and use a client library, such as this one, to apply the schema to the database, insert data into the database, and query the data to efficiently check permissions in their applications.
 
 Supported client API versions:
+- [v1](https://docs.authzed.com/reference/api#authzedapiv1)
 - [v1alpha1](https://docs.authzed.com/reference/api#authzedapiv1alpha1)
 - [v0](https://docs.authzed.com/reference/api#authzedapiv0)
 
@@ -54,7 +55,7 @@ Most commonly, if you are using [Maven] you can add the following to your pom.xm
 ```
 
 [Maven Central]: https://maven.apache.org/repository/index.html
-[Maven Central Artifact Page]: https://search.maven.org/artifact/com.authzed.api/authzed/0.0.1/jar
+[Maven Central Artifact Page]: https://search.maven.org/artifact/com.authzed.api/authzed/0.1.0/jar
 [Maven]: https://maven.apache.org
 
 ### Initializing a client
