@@ -1,6 +1,6 @@
 # Authzed Java Client
 
-[![Maven Metadata](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fcom%2Fauthzed%2Fapi%2Fauthzed%2Fmaven-metadata.xml)](https://search.maven.org/artifact/com.authzed.api/authzed/0.1.0/jar)
+[![Maven Metadata](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fcom%2Fauthzed%2Fapi%2Fauthzed%2Fmaven-metadata.xml)](https://search.maven.org/artifact/com.authzed.api/authzed/0.2.0/jar)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![Build Status](https://github.com/authzed/authzed-java/workflows/build/badge.svg)](https://github.com/authzed/authzed-java/actions)
 [![Mailing List](https://img.shields.io/badge/email-google%20groups-4285F4)](https://groups.google.com/g/authzed-oss)
@@ -16,7 +16,7 @@ Developers create a schema that models their permissions requirements and use a 
 Supported client API versions:
 - [v1](https://docs.authzed.com/reference/api#authzedapiv1)
 - [v1alpha1](https://docs.authzed.com/reference/api#authzedapiv1alpha1)
-- "v0" - deprecated
+- v0 - deprecated
 
 You can find more info on each API on the [Authzed API reference documentation].
 Additionally, Protobuf API documentation can be found on the [Buf Registry Authzed API repository].
@@ -50,12 +50,12 @@ Most commonly, if you are using [Maven] you can add the following to your pom.xm
 <dependency>
   <groupId>com.authzed.api</groupId>
   <artifactId>authzed</artifactId>
-  <version>0.1.0</version>
+  <version>0.2.0</version>
 </dependency>
 ```
 
 [Maven Central]: https://maven.apache.org/repository/index.html
-[Maven Central Artifact Page]: https://search.maven.org/artifact/com.authzed.api/authzed/0.1.0/jar
+[Maven Central Artifact Page]: https://search.maven.org/artifact/com.authzed.api/authzed/0.2.0/jar
 [Maven]: https://maven.apache.org
 
 ### Initializing a client
