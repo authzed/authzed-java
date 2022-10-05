@@ -1,9 +1,7 @@
 plugins {
   id "java-library"
   id "maven-publish"
-  id "signing"
 
-  id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
   id "com.google.protobuf" version "0.8.16"
 }
 
@@ -14,14 +12,8 @@ repositories {
   mavenLocal()
 }
 
-group = "com.authzed.api"
+group = "com.bridge.authzed.api"
 version = findProperty("release") ?: "0.0.0-SNAPSHOT"
-
-nexusPublishing { repositories { sonatype {
-  // If registered in Sonatype after 24 Feb 2021, you must explicitly configure these:
-  nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-  snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
-}}}
 
 publishing {
   publications { authzed(MavenPublication) {
@@ -47,23 +39,16 @@ publishing {
     }
   }}
 
-  repositories { maven {
-    def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-    def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-    def ossrhUsername = findProperty("ossrhUsername")
-    def ossrhPassword = findProperty("ossrhPassword")
-
-    name = "authzed"
-    url = project.hasProperty("release") ? releasesRepoUrl : snapshotsRepoUrl
-  }}
-}
-
-signing {
-  def signingKey = findProperty("signingKey")
-  def signingPassword = findProperty("signingPassword")
-  useInMemoryPgpKeys(signingKey, signingPassword)
-
-  sign publishing.publications.authzed
+  repositories {
+    maven {
+      name = "GitHubPackages"
+      url = "https://maven.pkg.github.com/gmiklos-ltg/authzed-java"
+      credentials {
+        username = System.getenv("GITHUB_ACTOR")
+        password = System.getenv("GITHUB_TOKEN")
+      }
+    }
+  }
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_8

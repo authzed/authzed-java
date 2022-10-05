@@ -7,6 +7,9 @@ jobs:
   publish:
     name: "Publish to Maven"
     runs-on: "ubuntu-latest"
+    permissions:
+      contents: read
+      packages: write
     steps:
     - uses: "actions/checkout@v3"
     - uses: "actions/setup-java@v3"
@@ -18,11 +21,8 @@ jobs:
       with:
         version: "1.7.0"
     - name: "Publish to Sonatype"
-      env:
-        ORG_GRADLE_PROJECT_signingKey: "${{ secrets.SIGNING_KEY_ARMORED }}"
-        ORG_GRADLE_PROJECT_signingPassword: "${{ secrets.SIGNING_PASSWORD }}"
-        ORG_GRADLE_PROJECT_sonatypeUsername: "${{ secrets.SONATYPE_USERNAME }}"
-        ORG_GRADLE_PROJECT_sonatypePassword: "${{ secrets.SONATYPE_PASSWORD }}"
       run: |
         export ORG_GRADLE_PROJECT_release=${GITHUB_REF#refs/tags/}
-        ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
+        ./gradlew publish
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
