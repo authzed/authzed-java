@@ -77,7 +77,8 @@ java {
 // All it does is complain about generated code.
 javadoc { options.addStringOption('Xdoclint:none', '-quiet') }
 
-def grpcVersion = "1.39.0"
+def grpcVersion = '1.49.1'
+def grpcKtVersion = '1.3.0'
 def protocVersion = "3.17.3"
 def authzedProtoCommit = "6bf58783fdc3ed33da39a728e2538c1cb58da34e"
 def bufDir = "${buildDir}/buf"
@@ -92,6 +93,7 @@ sourceSets { main {
 dependencies {
   implementation "io.grpc:grpc-protobuf:${grpcVersion}"
   implementation "io.grpc:grpc-stub:${grpcVersion}"
+  implementation "io.grpc:grpc-kotlin-stub:${grpcKtVersion}"
   runtimeOnly "io.grpc:grpc-netty-shaded:${grpcVersion}"
   compileOnly "org.apache.tomcat:annotations-api:6.0.53"
 }
@@ -114,11 +116,20 @@ task authzedProtos(type: Exec) {
 
 protobuf {
   protoc { artifact = "com.google.protobuf:protoc:${protocVersion}${protocPlatformTag}" }
-  plugins { grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}${protocPlatformTag}" } }
+  plugins {
+    grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}${protocPlatformTag}" }
+    grpcKt { artifact = "io.grpc:protoc-gen-grpc-kotlin:${grpcKtVersion}:jdk8@jar" }
+  }
 
   generateProtoTasks {
     ofSourceSet("main").each { task -> task.dependsOn authzedProtos }
-    all()*.plugins { grpc {} }
+    all()*.plugins {
+      grpc {}
+      grpcKt {}
+    }
+    all()*.builtins {
+      kotlin {}
+    }
   }
 }
 
