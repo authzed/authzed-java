@@ -1,8 +1,9 @@
 plugins {
+  id "org.jetbrains.kotlin.jvm" version "1.7.20"
   id "java-library"
   id "maven-publish"
 
-  id "com.google.protobuf" version "0.8.16"
+  id "com.google.protobuf" version "0.8.19"
 }
 
 repositories {
@@ -76,11 +77,21 @@ sourceSets { main {
 }}
 
 dependencies {
+  implementation("com.google.protobuf:protobuf-java:3.21.7")
+  implementation("com.google.protobuf:protobuf-kotlin:3.21.6")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.6.4")
   implementation "io.grpc:grpc-protobuf:${grpcVersion}"
   implementation "io.grpc:grpc-stub:${grpcVersion}"
   implementation "io.grpc:grpc-kotlin-stub:${grpcKtVersion}"
   runtimeOnly "io.grpc:grpc-netty-shaded:${grpcVersion}"
   compileOnly "org.apache.tomcat:annotations-api:6.0.53"
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+  kotlinOptions {
+    // I couldn't find any fixes for this issue for now.
+    freeCompilerArgs += '-XXLanguage:-ProhibitJvmFieldOnOverrideFromInterfaceInPrimaryConstructor'
+  }
 }
 
 task validateProtos(type: Exec) {
