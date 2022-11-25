@@ -21,9 +21,9 @@ jobs:
         distribution: "adopt"
         java-package: "jdk"
         java-version: "${{ matrix.java }}"
-    - uses: "bufbuild/buf-setup-action@v1"
+    - uses: "bufbuild/buf-setup-action@v1.9.0"
       with:
-        version: "1.7.0"
+        version: "1.9.0"
     - uses: "gradle/wrapper-validation-action@v1"
     - name: "Gradle Build"
       run: "./gradlew build"
@@ -40,9 +40,9 @@ jobs:
           distribution: "adopt"
           java-package: "jdk"
           java-version: "${{ matrix.java }}"
-      - uses: "bufbuild/buf-setup-action@v1"
+      - uses: "bufbuild/buf-setup-action@v1.9.0"
         with:
-          version: "1.7.0"
+          version: "1.9.0"
       - uses: "authzed/action-spicedb@v1"
         with:
           version: "latest"
