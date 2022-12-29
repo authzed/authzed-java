@@ -1,9 +1,8 @@
 # Authzed Java Client
 
-[![Maven Metadata](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fcom%2Fauthzed%2Fapi%2Fauthzed%2Fmaven-metadata.xml)](https://search.maven.org/artifact/com.authzed.api/authzed/0.2.0/jar)
+[![Maven Metadata](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fcom%2Fauthzed%2Fapi%2Fauthzed%2Fmaven-metadata.xml)](https://search.maven.org/artifact/com.authzed.api/authzed)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![Build Status](https://github.com/authzed/authzed-java/workflows/build/badge.svg)](https://github.com/authzed/authzed-java/actions)
-[![Mailing List](https://img.shields.io/badge/email-google%20groups-4285F4)](https://groups.google.com/g/authzed-oss)
 [![Discord Server](https://img.shields.io/discord/844600078504951838?color=7289da&logo=discord "Discord Server")](https://discord.gg/jTysUaxXzM)
 [![Twitter](https://img.shields.io/twitter/follow/authzed?color=%23179CF0&logo=twitter&style=flat-square)](https://twitter.com/authzed)
 
@@ -14,8 +13,8 @@ This repository houses the Java client library for Authzed.
 Developers create a schema that models their permissions requirements and use a client library, such as this one, to apply the schema to the database, insert data into the database, and query the data to efficiently check permissions in their applications.
 
 Supported client API versions:
-- [v1](https://docs.authzed.com/reference/api#authzedapiv1)
-- [v1alpha1](https://docs.authzed.com/reference/api#authzedapiv1alpha1)
+
+- [v1](https://authzed.com/docs/reference/api#authzedapiv1)
 
 You can find more info on each API on the [Authzed API reference documentation].
 Additionally, Protobuf API documentation can be found on the [Buf Registry Authzed API repository].
@@ -23,7 +22,7 @@ Additionally, Protobuf API documentation can be found on the [Buf Registry Authz
 See [CONTRIBUTING.md] for instructions on how to contribute and perform common tasks like building the project and running tests.
 
 [Authzed]: https://authzed.com
-[Authzed API Reference documentation]: https://docs.authzed.com/reference/api
+[Authzed API Reference documentation]: https://authzed.com/docs/reference/api
 [Buf Registry Authzed API repository]: https://buf.build/authzed/api/docs/main
 [CONTRIBUTING.md]: CONTRIBUTING.md
 
@@ -33,7 +32,7 @@ We highly recommend following the **[Protecting Your First App]** guide to learn
 
 If you're interested in examples for a specific version of the API, they can be found in their respective folders in the [examples directory].
 
-[Protecting Your First App]: https://docs.authzed.com/guides/first-app
+[Protecting Your First App]: https://authzed.com/docs/guides/first-app
 [examples directory]: /examples
 
 ## Basic Usage
@@ -54,7 +53,7 @@ Most commonly, if you are using [Maven] you can add the following to your pom.xm
 ```
 
 [Maven Central]: https://maven.apache.org/repository/index.html
-[Maven Central Artifact Page]: https://search.maven.org/artifact/com.authzed.api/authzed/0.2.0/jar
+[Maven Central Artifact Page]: https://search.maven.org/artifact/com.authzed.api/authzed
 [Maven]: https://maven.apache.org
 
 ### Initializing a client
@@ -73,11 +72,13 @@ import io.grpc.ManagedChannelBuilder;
 
 ManagedChannel channel = ManagedChannelBuilder
       .forTarget("grpc.authzed.com:443")
-      .useTransportSecurity()
+      .useTransportSecurity() // if not using TLS, replace with .usePlaintext()
       .build();
 PermissionsServiceGrpc.PermissionsServiceBlockingStub permissionsService = PermissionsServiceGrpc.newBlockingStub(channel)
       .withCallCredentials(new BearerToken("t_your_token_here_1234567deadbeef"));
 ```
+
+[grpc-java]: https://github.com/grpc/grpc-java
 
 ### Performing an API call
 
