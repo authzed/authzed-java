@@ -50,7 +50,7 @@ public class App {
     public static void main(String[] args) {
         ManagedChannel channel = ManagedChannelBuilder
                 .forTarget(target)
-                .useTransportSecurity()
+                .useTransportSecurity() // if not using TLS, replace with .usePlaintext()
                 .build();
         try {
             App client = new App(channel);
