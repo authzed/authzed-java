@@ -9,6 +9,9 @@ on:
       - "opened"
       - "closed"
       - "synchronize"
+  merge_group:
+    types:
+      - "checks_requested"
 
 jobs:
   CLAssistant:
