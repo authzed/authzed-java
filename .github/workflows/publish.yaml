@@ -17,6 +17,7 @@ jobs:
     - uses: "bufbuild/buf-setup-action@v1"
       with:
         version: "1.18.0"
+        github_token: ${{ github.token }}
     - name: "Publish to Sonatype"
       env:
         ORG_GRADLE_PROJECT_signingKey: "${{ secrets.SIGNING_KEY_ARMORED }}"
