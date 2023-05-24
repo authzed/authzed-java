@@ -14,9 +14,7 @@ jobs:
         distribution: "adopt"
         java-package: "jdk"
         java-version: "11" # LTS
-    - uses: "bufbuild/buf-setup-action@v1"
-      with:
-        version: "1.7.0"
+    - uses: "authzed/actions/buf-generate@main"
     - name: "Publish to Sonatype"
       env:
         ORG_GRADLE_PROJECT_signingKey: "${{ secrets.SIGNING_KEY_ARMORED }}"
