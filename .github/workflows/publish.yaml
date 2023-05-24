@@ -16,7 +16,7 @@ jobs:
         java-version: "11" # LTS
     - uses: "bufbuild/buf-setup-action@v1"
       with:
-        version: "1.7.0"
+        version: "1.18.0"
     - name: "Publish to Sonatype"
       env:
         ORG_GRADLE_PROJECT_signingKey: "${{ secrets.SIGNING_KEY_ARMORED }}"
