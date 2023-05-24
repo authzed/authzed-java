@@ -140,7 +140,7 @@ configurations {
 }
 
 dependencies {
-  intTestImplementation "junit:junit:4.13"
+  intTestImplementation "junit:junit:4.13.2"
 }
 
 tasks.register('integrationTest', Test) {
