@@ -13,7 +13,7 @@ jobs:
       with:
         distribution: "adopt"
         java-package: "jdk"
-        java-version: "11" # LTS
+        java-version: "17" # LTS
     - uses: "authzed/actions/buf-generate@main"
     - name: "Publish to Sonatype"
       env:
