@@ -49,7 +49,7 @@ Most commonly, if you are using [Maven] you can add the following to your pom.xm
     <dependency>
         <groupId>com.authzed.api</groupId>
         <artifactId>authzed</artifactId>
-        <version>0.4.0</version>
+        <version>0.5.0</version>
     </dependency>
     <dependency>
         <groupId>io.grpc</groupId>
@@ -68,7 +68,7 @@ If you are using [Gradle] then add the following to your `build.gradle` file:
 
 ```groovy
 dependencies {
-    implementation "com.authzed.api:authzed:0.4.0"
+    implementation "com.authzed.api:authzed:0.5.0"
     implementation 'io.grpc:grpc-protobuf:1.54.1'
     implementation 'io.grpc:grpc-stub:1.54.1'
 }
