@@ -54,12 +54,12 @@ Most commonly, if you are using [Maven] you can add the following to your pom.xm
     <dependency>
         <groupId>io.grpc</groupId>
         <artifactId>grpc-protobuf</artifactId>
-        <version>1.54.1</version>
+        <version>1.55.1</version>
     </dependency>
     <dependency>
         <groupId>io.grpc</groupId>
         <artifactId>grpc-stub</artifactId>
-        <version>1.54.1</version>
+        <version>1.55.1</version>
     </dependency>
 </dependencies>
 ```
@@ -69,8 +69,8 @@ If you are using [Gradle] then add the following to your `build.gradle` file:
 ```groovy
 dependencies {
     implementation "com.authzed.api:authzed:0.5.0"
-    implementation 'io.grpc:grpc-protobuf:1.54.1'
-    implementation 'io.grpc:grpc-stub:1.54.1'
+    implementation 'io.grpc:grpc-protobuf:1.55.1'
+    implementation 'io.grpc:grpc-stub:1.55.1'
 }
 ```
 
