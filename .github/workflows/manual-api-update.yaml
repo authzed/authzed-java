@@ -1,0 +1,36 @@
+name: Update for API change
+on:
+  workflow_dispatch:
+    inputs:
+      buftag:
+        description: Tag or commit from https://buf.build/authzed/api/tags/main
+        required: true
+        type: string
+jobs:
+  test:
+    name: "Create PR for API update"
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - name: "Update Buf Script"
+        id: buf-update
+        uses: authzed/actions/buf-api-update@main
+        with:
+          api-commit: ${{ inputs.buftag }}
+          spec-path: build.gradle
+          file-format: gradle
+      - name: "Output update status"
+        env:
+          UPDATED_STATUS: ${{ steps.buf-update.outputs.updated }}
+        run: |
+          echo "Update status: $UPDATED_STATUS"
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4.0.4
+        if: steps.buf-update.outputs.updated == 'true'
+        with:
+          delete-branch: "true"
+          title: Update API to ${{ inputs.buftag }}
+          branch: api-change/${{ inputs.buftag }}
+          token: ${{ secrets.GITHUB_TOKEN }}
