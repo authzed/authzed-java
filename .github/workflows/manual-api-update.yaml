@@ -26,6 +26,13 @@ jobs:
           UPDATED_STATUS: ${{ steps.buf-update.outputs.updated }}
         run: |
           echo "Update status: $UPDATED_STATUS"
+      - name: "Update README package version"
+        uses: authzed/actions/semver-update@main
+        if: steps.buf-update.outputs.updated == 'true'
+        with:
+          sourcefile-path: README.md
+          version-regex: "<artifactId>authzed</artifactId>\n<version>(.+)</version>"
+          version-change: minor
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4.0.4
         if: steps.buf-update.outputs.updated == 'true'
