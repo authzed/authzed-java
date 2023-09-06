@@ -31,7 +31,7 @@ jobs:
         if: steps.buf-update.outputs.updated == 'true'
         with:
           sourcefile-path: README.md
-          version-regex: "<artifactId>authzed<\/artifactId>(\\s+)<version>(.+)<\/version>"
+          version-regex: '<artifactId>authzed<\/artifactId>(\s+)<version>(.+)<\/version>'
           version-change: minor
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4.0.4
