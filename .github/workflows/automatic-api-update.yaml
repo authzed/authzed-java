@@ -1,0 +1,39 @@
+name: "Called update for API change"
+on:
+  repository_dispatch:
+    types: ["api_update"]
+jobs:
+  test:
+    name: "Create PR for API update"
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - name: "Update Buf Script"
+        id: buf-update
+        uses: authzed/actions/buf-api-update@main
+        with:
+          api-commit: "${{ github.event.client_payload.BUFTAG }}"
+          spec-path: build.gradle
+          file-format: gradle
+      - name: "Output update status"
+        env:
+          UPDATED_STATUS: ${{ steps.buf-update.outputs.updated }}
+        run: |
+          echo "Update status: $UPDATED_STATUS"
+      - name: "Update README package version"
+        uses: authzed/actions/semver-update@main
+        if: steps.buf-update.outputs.updated == 'true'
+        with:
+          sourcefile-path: README.md
+          version-regex: '<artifactId>authzed<\/artifactId>\s+<version>(.+)<\/version>'
+          version-change: minor
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4.0.4
+        if: steps.buf-update.outputs.updated == 'true'
+        with:
+          delete-branch: "true"
+          title: "Update API to ${{ github.event.client_payload.BUFTAG }}"
+          branch: "api-change/${{ github.event.client_payload.BUFTAG }}"
+          token: ${{ secrets.GITHUB_TOKEN }}
