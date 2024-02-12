@@ -27,3 +27,12 @@ jobs:
       run: |
         export ORG_GRADLE_PROJECT_release=${GITHUB_REF#refs/tags/}
         ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
+    - name: Publish JavaDoc
+      uses: MathieuSoysal/Javadoc-publisher.yml@v2.4.0
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        javadoc-branch: javadoc
+        java-version: 17
+        project: gradle
+        target-folder: docs
+        custom-command: gradle javadoc -Prelease=${GITHUB_REF#refs/tags/}
