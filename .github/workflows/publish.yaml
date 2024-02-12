@@ -34,4 +34,5 @@ jobs:
         javadoc-branch: javadoc
         java-version: 17
         project: gradle
+        target-folder: javadoc
         custom-command: gradle javadoc
