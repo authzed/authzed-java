@@ -17,6 +17,7 @@ Supported client API versions:
 
 You can find more info on each API on the [SpiceDB API reference documentation].
 Additionally, Protobuf API documentation can be found on the [Buf Registry SpiceDB API repository].
+Documentation for the latest Java client release is available as [Javadoc].
 
 See [CONTRIBUTING.md] for instructions on how to contribute and perform common tasks like building the project and running tests.
 
@@ -25,6 +26,7 @@ See [CONTRIBUTING.md] for instructions on how to contribute and perform common t
 [SpiceDB API Reference documentation]: https://authzed.com/docs/reference/api
 [Buf Registry SpiceDB API repository]: https://buf.build/authzed/api/docs/main
 [CONTRIBUTING.md]: CONTRIBUTING.md
+[Javadoc]: https://authzed.github.io/authzed-java/index.html
 
 ## Getting Started
 
