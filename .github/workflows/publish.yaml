@@ -35,4 +35,4 @@ jobs:
         java-version: 17
         project: gradle
         target-folder: docs
-        custom-command: gradle javadoc
+        custom-command: gradle javadoc -Prelease=${GITHUB_REF#refs/tags/}
