@@ -1,3 +1,4 @@
+import static com.authzed.api.v1.CheckDebugTrace.Permissionship.PERMISSIONSHIP_HAS_PERMISSION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -6,30 +7,16 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
+import com.authzed.api.v1.*;
 import com.authzed.grpcutil.BearerToken;
 
+import io.grpc.stub.StreamObserver;
 import org.junit.Test;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import com.authzed.api.v1.PermissionsServiceGrpc;
-import com.authzed.api.v1.SchemaServiceGrpc;
-import com.authzed.api.v1.Core.ObjectReference;
-import com.authzed.api.v1.Core.Relationship;
-import com.authzed.api.v1.Core.RelationshipUpdate;
-import com.authzed.api.v1.Core.SubjectReference;
-import com.authzed.api.v1.Core.ZedToken;
-import com.authzed.api.v1.PermissionService;
-import com.authzed.api.v1.PermissionService.CheckPermissionRequest;
-import com.authzed.api.v1.PermissionService.CheckPermissionResponse;
-import com.authzed.api.v1.PermissionService.CheckPermissionResponse.Permissionship;
-import com.authzed.api.v1.SchemaServiceOuterClass.ReadSchemaRequest;
-import com.authzed.api.v1.SchemaServiceOuterClass.ReadSchemaResponse;
-import com.authzed.api.v1.SchemaServiceOuterClass.WriteSchemaRequest;
-import com.authzed.api.v1.PermissionService.Consistency;
-import com.authzed.api.v1.PermissionService.WriteRelationshipsRequest;
-import com.authzed.api.v1.PermissionService.WriteRelationshipsResponse;
 
 public class V1ClientTest {
 	private static final String target = "localhost:50051";
@@ -60,6 +47,9 @@ public class V1ClientTest {
 		ReadSchemaResponse readResponse = schemaService.readSchema(readRequest);
 		assertTrue(readResponse.getSchemaText().indexOf("test/article") > 0);
 	}
+
+	// For an example with flow control, see
+	// https://github.com/grpc/grpc-java/blob/9071c1ad7c842f4e73b6ae95b71f11c517b177a4/examples/src/main/java/io/grpc/examples/manualflowcontrol/ManualFlowControlClient.java
 	@Test
 	public void testCheckPermission() {
 		// Initialize services
@@ -103,7 +93,7 @@ public class V1ClientTest {
 				.build();
 
 		CheckPermissionResponse checkResponse = permissionsService.checkPermission(checkRequest);
-		assertEquals(Permissionship.PERMISSIONSHIP_HAS_PERMISSION, checkResponse.getPermissionship());
+		assertEquals(CheckPermissionResponse.Permissionship.PERMISSIONSHIP_HAS_PERMISSION, checkResponse.getPermissionship());
 	}
 
 	@Test
@@ -127,7 +117,7 @@ public class V1ClientTest {
 		ZedToken zedToken = ZedToken.newBuilder()
 				.setToken(tokenVal)
 				.build();
-		PermissionService.LookupResourcesRequest lookupResourcesRequest = PermissionService.LookupResourcesRequest.newBuilder()
+		LookupResourcesRequest lookupResourcesRequest = LookupResourcesRequest.newBuilder()
 				.setConsistency(
 						Consistency.newBuilder()
 								.setAtLeastAsFresh(zedToken)
@@ -144,7 +134,7 @@ public class V1ClientTest {
 				.setPermission("can_comment")
 				.build();
 
-		Iterator<PermissionService.LookupResourcesResponse> resp = permissionsService.lookupResources(lookupResourcesRequest);
+		Iterator<LookupResourcesResponse> resp = permissionsService.lookupResources(lookupResourcesRequest);
 		Set<String> resources = new HashSet<>();
 		resp.forEachRemaining(lookupResourcesResponse -> {
 			resources.add(lookupResourcesResponse.getResourceObjectId());
@@ -184,6 +174,87 @@ public class V1ClientTest {
 
 		WriteRelationshipsResponse relResponse = permissionsService.writeRelationships(relRequest);
 		return relResponse.getWrittenAt().getToken();
+	}
+
+
+	class BulkImportObserver implements StreamObserver<BulkImportRelationshipsResponse> {
+		final CountDownLatch done = new CountDownLatch(1);
+		private long loaded;
+
+		@Override
+		public void onNext(BulkImportRelationshipsResponse resp) {
+			loaded += resp.getNumLoaded();
+		}
+
+		@Override
+		public void onError(Throwable throwable) {
+			// TODO need to capture error so that blocking callsite is able to access it
+			System.out.println("onError");
+			done.countDown();
+		}
+
+		@Override
+		public void onCompleted() {
+			System.out.println("onCompleted");
+			done.countDown();
+		}
+
+		public void await() throws InterruptedException {
+			done.await();
+		}
+
+		public long loaded() {
+			return loaded;
+		}
+	};
+
+	@Test
+	public void testBulkImport() {
+
+		ManagedChannel channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
+		String token = generateToken();
+		ExperimentalServiceGrpc.ExperimentalServiceStub experimentalService = ExperimentalServiceGrpc.
+				newStub(channel)
+				.withCallCredentials(new BearerToken(token));
+
+		BulkImportObserver responseObserver = new BulkImportObserver();
+		writeTestSchema(token, channel);
+		io.grpc.stub.StreamObserver<com.authzed.api.v1.BulkImportRelationshipsRequest>
+				observer = experimentalService.bulkImportRelationships(responseObserver);
+
+		for (int i = 0; i < 10; i++) {
+			BulkImportRelationshipsRequest req = BulkImportRelationshipsRequest.newBuilder()
+					.addRelationships(relationship("test/article", "java_test_" + i, "author", "test/user", "george")).build();
+			observer.onNext(req);
+		}
+		observer.onCompleted();
+
+		try {
+			responseObserver.await();
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+
+		assertEquals(10, responseObserver.loaded());
+	}
+
+	private static Relationship relationship(String resourceType, String resourceID, String relation, String subjectType, String subjectID) {
+		return Relationship.newBuilder()
+				.setResource(
+						ObjectReference.newBuilder()
+								.setObjectType(resourceType)
+								.setObjectId(resourceID)
+								.build())
+				.setRelation(relation)
+				.setSubject(
+						SubjectReference.newBuilder()
+								.setObject(
+										ObjectReference.newBuilder()
+												.setObjectType(subjectType)
+												.setObjectId(subjectID)
+												.build())
+								.build())
+				.build();
 	}
 
 	private static SchemaServiceGrpc.SchemaServiceBlockingStub writeTestSchema(String token, ManagedChannel channel) {
