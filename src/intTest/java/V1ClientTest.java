@@ -1,3 +1,4 @@
+import static com.authzed.api.v1.CheckDebugTrace.Permissionship.PERMISSIONSHIP_HAS_PERMISSION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -7,29 +8,13 @@ import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
 
+import com.authzed.api.v1.*;
 import com.authzed.grpcutil.BearerToken;
 
 import org.junit.Test;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import com.authzed.api.v1.PermissionsServiceGrpc;
-import com.authzed.api.v1.SchemaServiceGrpc;
-import com.authzed.api.v1.Core.ObjectReference;
-import com.authzed.api.v1.Core.Relationship;
-import com.authzed.api.v1.Core.RelationshipUpdate;
-import com.authzed.api.v1.Core.SubjectReference;
-import com.authzed.api.v1.Core.ZedToken;
-import com.authzed.api.v1.PermissionService;
-import com.authzed.api.v1.PermissionService.CheckPermissionRequest;
-import com.authzed.api.v1.PermissionService.CheckPermissionResponse;
-import com.authzed.api.v1.PermissionService.CheckPermissionResponse.Permissionship;
-import com.authzed.api.v1.SchemaServiceOuterClass.ReadSchemaRequest;
-import com.authzed.api.v1.SchemaServiceOuterClass.ReadSchemaResponse;
-import com.authzed.api.v1.SchemaServiceOuterClass.WriteSchemaRequest;
-import com.authzed.api.v1.PermissionService.Consistency;
-import com.authzed.api.v1.PermissionService.WriteRelationshipsRequest;
-import com.authzed.api.v1.PermissionService.WriteRelationshipsResponse;
 
 public class V1ClientTest {
 	private static final String target = "localhost:50051";
@@ -60,6 +45,9 @@ public class V1ClientTest {
 		ReadSchemaResponse readResponse = schemaService.readSchema(readRequest);
 		assertTrue(readResponse.getSchemaText().indexOf("test/article") > 0);
 	}
+
+	// For an example with flow control, see
+	// https://github.com/grpc/grpc-java/blob/9071c1ad7c842f4e73b6ae95b71f11c517b177a4/examples/src/main/java/io/grpc/examples/manualflowcontrol/ManualFlowControlClient.java
 	@Test
 	public void testCheckPermission() {
 		// Initialize services
@@ -103,7 +91,7 @@ public class V1ClientTest {
 				.build();
 
 		CheckPermissionResponse checkResponse = permissionsService.checkPermission(checkRequest);
-		assertEquals(Permissionship.PERMISSIONSHIP_HAS_PERMISSION, checkResponse.getPermissionship());
+		assertEquals(CheckPermissionResponse.Permissionship.PERMISSIONSHIP_HAS_PERMISSION, checkResponse.getPermissionship());
 	}
 
 	@Test
@@ -127,7 +115,7 @@ public class V1ClientTest {
 		ZedToken zedToken = ZedToken.newBuilder()
 				.setToken(tokenVal)
 				.build();
-		PermissionService.LookupResourcesRequest lookupResourcesRequest = PermissionService.LookupResourcesRequest.newBuilder()
+		LookupResourcesRequest lookupResourcesRequest = LookupResourcesRequest.newBuilder()
 				.setConsistency(
 						Consistency.newBuilder()
 								.setAtLeastAsFresh(zedToken)
@@ -144,7 +132,7 @@ public class V1ClientTest {
 				.setPermission("can_comment")
 				.build();
 
-		Iterator<PermissionService.LookupResourcesResponse> resp = permissionsService.lookupResources(lookupResourcesRequest);
+		Iterator<LookupResourcesResponse> resp = permissionsService.lookupResources(lookupResourcesRequest);
 		Set<String> resources = new HashSet<>();
 		resp.forEachRemaining(lookupResourcesResponse -> {
 			resources.add(lookupResourcesResponse.getResourceObjectId());
