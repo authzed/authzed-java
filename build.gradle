@@ -50,8 +50,8 @@ publishing {
   repositories { maven {
     def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
     def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-    def ossrhUsername = findProperty("ossrhUsername")
-    def ossrhPassword = findProperty("ossrhPassword")
+    def ossrhUsername = findProperty("sonatypeUsername")
+    def ossrhPassword = findProperty("sonatypePassword")
 
     name = "authzed"
     url = project.hasProperty("release") ? releasesRepoUrl : snapshotsRepoUrl
