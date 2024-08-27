@@ -77,8 +77,8 @@ java {
 // All it does is complain about generated code.
 javadoc { options.addStringOption('Xdoclint:none', '-quiet') }
 
-def grpcVersion = "1.65.1"
-def protocVersion = "3.25.3"
+def grpcVersion = "1.66.0"
+def protocVersion = "4.27.3"
 def authzedProtoCommit = "v1.35.0"
 def bufDir = "${buildDir}/buf"
 def protocPlatformTag = project.findProperty('protoc_platform') ? ":${protoc_platform}" : ""
