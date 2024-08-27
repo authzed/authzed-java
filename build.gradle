@@ -91,6 +91,7 @@ sourceSets { main {
 
 dependencies {
   implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+  implementation "com.google.protobuf:protobuf-java:${protocVersion}"
   implementation "io.grpc:grpc-stub:${grpcVersion}"
   runtimeOnly "io.grpc:grpc-netty-shaded:${grpcVersion}"
   compileOnly "org.apache.tomcat:annotations-api:6.0.53"
