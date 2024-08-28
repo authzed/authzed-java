@@ -1,0 +1,11 @@
+#!/usr/bin/env -S buf generate
+---
+version: "v2"
+inputs:
+  - module: "buf.build/authzed/api:v1.35.0"
+plugins:
+  - protoc_builtin: "java"
+    out: "./generated"
+    # TODO: lmao
+  - local: "/home/tstirrat/.gradle/caches/modules-2/files-2.1/io.grpc/protoc-gen-grpc-java/1.66.0/24c9e1d727942b34efc5f36ff268665136d0cb4c/protoc-gen-grpc-java-1.66.0-linux-x86_64.exe"
+    out: "./generated"
