@@ -19,7 +19,7 @@ You can find more info on each API on the [SpiceDB API reference documentation].
 Additionally, Protobuf API documentation can be found on the [Buf Registry SpiceDB API repository].
 Documentation for the latest Java client release is available as [Javadoc].
 
-See [CONTRIBUTING.md] for instructions on how to contribute and perform common tasks like building the project and running tests.
+See [CONTRIBUTING.md] for instructions on contributing and performing common tasks like building the project and running tests.
 
 [Authzed]: https://authzed.com
 [SpiceDB]: https://github.com/authzed/spicedb
@@ -32,7 +32,7 @@ See [CONTRIBUTING.md] for instructions on how to contribute and perform common t
 
 We highly recommend following the **[Protecting Your First App]** guide to learn the latest best practice to integrate an application with SpiceDB.
 
-If you're interested in examples for a specific version of the API, they can be found in their respective folders in the [examples directory].
+If you're interested in examples for a specific API version, they can be found in their respective folders in the [examples directory].
 
 [Protecting Your First App]: https://authzed.com/docs/guides/first-app
 [examples directory]: /examples
@@ -51,17 +51,17 @@ Most commonly, if you are using [Maven] you can add the following to your pom.xm
     <dependency>
         <groupId>com.authzed.api</groupId>
         <artifactId>authzed</artifactId>
-        <version>0.11.0</version>
+        <version>v1.0.0</version>
     </dependency>
     <dependency>
         <groupId>io.grpc</groupId>
         <artifactId>grpc-protobuf</artifactId>
-        <version>1.62.2</version>
+        <version>1.66.0</version>
     </dependency>
     <dependency>
         <groupId>io.grpc</groupId>
         <artifactId>grpc-stub</artifactId>
-        <version>1.62.2</version>
+        <version>1.66.0</version>
     </dependency>
 </dependencies>
 ```
@@ -70,9 +70,9 @@ If you are using [Gradle] then add the following to your `build.gradle` file:
 
 ```groovy
 dependencies {
-    implementation "com.authzed.api:authzed:0.7.0"
-    implementation 'io.grpc:grpc-protobuf:1.62.2'
-    implementation 'io.grpc:grpc-stub:1.62.2'
+    implementation "com.authzed.api:authzed:v1.0.0"
+    implementation 'io.grpc:grpc-protobuf:1.66.0'
+    implementation 'io.grpc:grpc-stub:1.66.0'
 }
 ```
 
@@ -85,7 +85,7 @@ dependencies {
 
 Because of how [grpc-java] is designed, there is little in terms of abstraction over the gRPC APIs underpinning Authzed.
 A `ManagedChannel` will establish a connection to Authzed that can be shared with _stubs_ for each gRPC service.
-In order to successfully authenticate with the API, you will have to provide a [Bearer Token] with your own API Token
+To successfully authenticate with the API, you will have to provide a [Bearer Token] with your own API Token
 from the [Authzed dashboard] or your local SpiceDB instance in place of `t_your_token_here_1234567deadbeef` as 
 `CallCredentials` for each stub:
 
@@ -139,9 +139,7 @@ The following example initializes a permission client, performs a `CheckPermissi
 ```java
 package org.example;
 
-import com.authzed.api.v1.Core;
-import com.authzed.api.v1.PermissionService;
-import com.authzed.api.v1.PermissionsServiceGrpc;
+import com.authzed.api.v1.*;
 import com.authzed.grpcutil.BearerToken;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -159,20 +157,20 @@ public class ClientExample {
                 .withCallCredentials(bearerToken);
 
 
-        PermissionService.CheckPermissionRequest request = PermissionService.CheckPermissionRequest.newBuilder()
+        CheckPermissionRequest request = CheckPermissionRequest.newBuilder()
                 .setConsistency(
-                        PermissionService.Consistency.newBuilder()
+                        Consistency.newBuilder()
                                 .setMinimizeLatency(true)
                                 .build())
                 .setResource(
-                        Core.ObjectReference.newBuilder()
+                        ObjectReference.newBuilder()
                                 .setObjectType("blog/post")
                                 .setObjectId("1")
                                 .build())
                 .setSubject(
-                        Core.SubjectReference.newBuilder()
+                        SubjectReference.newBuilder()
                                 .setObject(
-                                        Core.ObjectReference.newBuilder()
+                                        ObjectReference.newBuilder()
                                                 .setObjectType("blog/user")
                                                 .setObjectId("emilia")
                                                 .build())
@@ -182,7 +180,7 @@ public class ClientExample {
 
         // Is Emilia in the set of users that can read post #1?
         try {
-            PermissionService.CheckPermissionResponse response = permissionsService.checkPermission(request);
+            CheckPermissionResponse response = permissionsService.checkPermission(request);
             System.out.println("result: " + response.getPermissionship().getValueDescriptor().getName());
         } catch (Exception e) {
             System.out.println("Failed to check permission: " + e.getMessage());
