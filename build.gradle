@@ -158,11 +158,6 @@ tasks.register('integrationTest', Test) {
     description = 'Runs integration tests.'
     group = 'verification'
 
-    // This is mostly so we can use """strings"""
-    // in tests and not have it yell at us.
-    sourceCompatibility = JavaVersion.VERSION_15
-    targetCompatibility = JavaVersion.VERSION_15
-
     testClassesDirs = sourceSets.intTest.output.classesDirs
     classpath = sourceSets.intTest.runtimeClasspath
     shouldRunAfter test
