@@ -8,10 +8,7 @@ import com.google.protobuf.Value;
 import com.authzed.api.v1.*;
 
 import io.grpc.stub.StreamObserver;
-import jdk.dynalink.linker.support.Lookup;
 import org.junit.Test;
-
-import javax.security.auth.Subject;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
