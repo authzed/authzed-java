@@ -149,6 +149,7 @@ configurations {
 // Test things
 dependencies {
   intTestImplementation "junit:junit:4.13.2"
+    intTestImplementation "org.assertj:assertj-core:3.26.3"
 }
 
 tasks.register('integrationTest', Test) {
@@ -156,6 +157,11 @@ tasks.register('integrationTest', Test) {
 
     description = 'Runs integration tests.'
     group = 'verification'
+
+    // This is mostly so we can use """strings"""
+    // in tests and not have it yell at us.
+    sourceCompatibility = JavaVersion.VERSION_15
+    targetCompatibility = JavaVersion.VERSION_15
 
     testClassesDirs = sourceSets.intTest.output.classesDirs
     classpath = sourceSets.intTest.runtimeClasspath
