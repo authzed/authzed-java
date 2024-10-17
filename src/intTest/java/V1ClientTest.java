@@ -1,4 +1,5 @@
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 
 import com.google.protobuf.Struct;
@@ -7,36 +8,42 @@ import com.google.protobuf.Value;
 import com.authzed.api.v1.*;
 
 import io.grpc.stub.StreamObserver;
+import jdk.dynalink.linker.support.Lookup;
 import org.junit.Test;
+
+import javax.security.auth.Subject;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/*
+NOTE: this file has some un-ergonomic code because we test against Java 8
+and therefore need to conform to Java 8 syntax. When we get to where we can
+drop support, we can update this code.
+ */
 public class V1ClientTest {
     private static final Consistency fullyConsistent = Consistency.newBuilder().setFullyConsistent(true).build();
 
     @Test
     public void testBasicSchema() {
         // Initialize services
-        var client = new TestClient();
-        String schema = """
-                definition document {
-                    relation reader: user
-                }
-                definition user {}
-                """;
+        TestClient client = new TestClient();
+        String schema = "definition document {\n"
+                + "relation reader: user\n"
+                + "}\n"
+                + "definition user {}";
         // Write schema
         writeSchema(client, schema);
 
         // Read schema
-        var readRequest = ReadSchemaRequest.newBuilder().build();
-        var readResponse = client.schemaService.readSchema(readRequest);
+        ReadSchemaRequest readRequest = ReadSchemaRequest.newBuilder().build();
+        ReadSchemaResponse readResponse = client.schemaService.readSchema(readRequest);
         assertThat(readResponse.getSchemaText()).contains("definition document");
         assertThat(readResponse.getSchemaText()).contains("definition user");
     }
 
     @Test
     public void testSchemaWithCaveats() {
-        var client = new TestClient();
+        TestClient client = new TestClient();
         writeTestSchema(client);
     }
 
@@ -44,11 +51,11 @@ public class V1ClientTest {
     // https://github.com/grpc/grpc-java/blob/9071c1ad7c842f4e73b6ae95b71f11c517b177a4/examples/src/main/java/io/grpc/examples/manualflowcontrol/ManualFlowControlClient.java
     @Test
     public void testCheck() {
-        var client = new TestClient();
+        TestClient client = new TestClient();
         writeTestSchema(client);
-        var testTuples = writeTestTuples(client);
+        TestTuples testTuples = writeTestTuples(client);
 
-        var firstResponse = client.permissionsService.checkPermission(CheckPermissionRequest.newBuilder()
+        CheckPermissionResponse firstResponse = client.permissionsService.checkPermission(CheckPermissionRequest.newBuilder()
                 .setConsistency(fullyConsistent)
                 .setResource(testTuples.postOne)
                 .setSubject(testTuples.emilia)
@@ -56,7 +63,7 @@ public class V1ClientTest {
                 .build());
         assertThat(firstResponse.getPermissionship()).isEqualTo(CheckPermissionResponse.Permissionship.PERMISSIONSHIP_HAS_PERMISSION);
 
-        var secondResponse = client.permissionsService.checkPermission(CheckPermissionRequest.newBuilder()
+        CheckPermissionResponse secondResponse = client.permissionsService.checkPermission(CheckPermissionRequest.newBuilder()
                 .setConsistency(fullyConsistent)
                 .setResource(testTuples.postOne)
                 .setSubject(testTuples.emilia)
@@ -64,7 +71,7 @@ public class V1ClientTest {
                 .build());
         assertThat(secondResponse.getPermissionship()).isEqualTo(CheckPermissionResponse.Permissionship.PERMISSIONSHIP_HAS_PERMISSION);
 
-        var thirdResponse = client.permissionsService.checkPermission(CheckPermissionRequest.newBuilder()
+        CheckPermissionResponse thirdResponse = client.permissionsService.checkPermission(CheckPermissionRequest.newBuilder()
                 .setConsistency(fullyConsistent)
                 .setResource(testTuples.postOne)
                 .setSubject(testTuples.beatrice)
@@ -72,7 +79,7 @@ public class V1ClientTest {
                 .build());
         assertThat(thirdResponse.getPermissionship()).isEqualTo(CheckPermissionResponse.Permissionship.PERMISSIONSHIP_HAS_PERMISSION);
 
-        var fourthResponse = client.permissionsService.checkPermission(CheckPermissionRequest.newBuilder()
+        CheckPermissionResponse fourthResponse = client.permissionsService.checkPermission(CheckPermissionRequest.newBuilder()
                 .setConsistency(fullyConsistent)
                 .setResource(testTuples.postOne)
                 .setSubject(testTuples.beatrice)
@@ -83,13 +90,13 @@ public class V1ClientTest {
 
     @Test
     public void testCaveatedCheck() {
-        var client = new TestClient();
+        TestClient client = new TestClient();
         writeTestSchema(client);
-        var testTuples = writeTestTuples(client);
+        TestTuples testTuples = writeTestTuples(client);
 
         // Likes Harry Potter
-        var likesContext = Struct.newBuilder().putFields("likes", Value.newBuilder().setBoolValue(true).build()).build();
-        var firstResponse = client.permissionsService.checkPermission(CheckPermissionRequest.newBuilder()
+        Struct likesContext = Struct.newBuilder().putFields("likes", Value.newBuilder().setBoolValue(true).build()).build();
+        CheckPermissionResponse firstResponse = client.permissionsService.checkPermission(CheckPermissionRequest.newBuilder()
                 .setConsistency(fullyConsistent)
                 .setResource(testTuples.postOne)
                 .setSubject(testTuples.beatrice)
@@ -99,8 +106,8 @@ public class V1ClientTest {
         assertThat(firstResponse.getPermissionship()).isEqualTo(CheckPermissionResponse.Permissionship.PERMISSIONSHIP_HAS_PERMISSION);
 
         // No longer likes Harry Potter
-        var dislikesContext = Struct.newBuilder().putFields("likes", Value.newBuilder().setBoolValue(false).build()).build();
-        var secondResponse = client.permissionsService.checkPermission(CheckPermissionRequest.newBuilder()
+        Struct dislikesContext = Struct.newBuilder().putFields("likes", Value.newBuilder().setBoolValue(false).build()).build();
+        CheckPermissionResponse secondResponse = client.permissionsService.checkPermission(CheckPermissionRequest.newBuilder()
                 .setConsistency(fullyConsistent)
                 .setResource(testTuples.postOne)
                 .setSubject(testTuples.beatrice)
@@ -110,7 +117,7 @@ public class V1ClientTest {
         assertThat(secondResponse.getPermissionship()).isEqualTo(CheckPermissionResponse.Permissionship.PERMISSIONSHIP_NO_PERMISSION);
 
         // No longer likes Harry Potter
-        var thirdResponse = client.permissionsService.checkPermission(CheckPermissionRequest.newBuilder()
+        CheckPermissionResponse thirdResponse = client.permissionsService.checkPermission(CheckPermissionRequest.newBuilder()
                 .setConsistency(fullyConsistent)
                 .setResource(testTuples.postOne)
                 .setSubject(testTuples.beatrice)
@@ -122,19 +129,19 @@ public class V1ClientTest {
 
     @Test
     public void testLookupResources() {
-        var client = new TestClient();
+        TestClient client = new TestClient();
         writeTestSchema(client);
-        var testTuples = writeTestTuples(client);
+        TestTuples testTuples = writeTestTuples(client);
 
-        var lookupResourcesRequest = LookupResourcesRequest.newBuilder()
+        LookupResourcesRequest lookupResourcesRequest = LookupResourcesRequest.newBuilder()
                 .setConsistency(fullyConsistent)
                 .setResourceObjectType("post")
                 .setSubject(testTuples.emilia)
                 .setPermission("write")
                 .build();
 
-        var resp = client.permissionsService.lookupResources(lookupResourcesRequest);
-        var resources = new HashSet<String>();
+        Iterator<LookupResourcesResponse> resp = client.permissionsService.lookupResources(lookupResourcesRequest);
+        HashSet<String> resources = new HashSet<String>();
         resp.forEachRemaining(lookupResourcesResponse -> resources.add(lookupResourcesResponse.getResourceObjectId()));
 
         assertThat(resources).contains(testTuples.postOne.getObjectId());
@@ -144,19 +151,19 @@ public class V1ClientTest {
 
     @Test
     public void testLookupSubjects() {
-        var client = new TestClient();
+        TestClient client = new TestClient();
         writeTestSchema(client);
-        var testTuples = writeTestTuples(client);
+        TestTuples testTuples = writeTestTuples(client);
 
-        var lookupSubjectsRequest = LookupSubjectsRequest.newBuilder()
+        LookupSubjectsRequest lookupSubjectsRequest = LookupSubjectsRequest.newBuilder()
                 .setConsistency(fullyConsistent)
                 .setSubjectObjectType("user")
                 .setResource(testTuples.postOne)
                 .setPermission("view")
                 .build();
 
-        var resp = client.permissionsService.lookupSubjects(lookupSubjectsRequest);
-        var users = new HashSet<String>();
+        Iterator<LookupSubjectsResponse> resp = client.permissionsService.lookupSubjects(lookupSubjectsRequest);
+        HashSet<String> users = new HashSet<String>();
         resp.forEachRemaining(response ->
             users.add(response.getSubject().getSubjectObjectId()));
 
@@ -167,11 +174,11 @@ public class V1ClientTest {
 
     @Test
     public void testCheckBulkPermissions() {
-        var client = new TestClient();
+        TestClient client = new TestClient();
         writeTestSchema(client);
-        var testTuples = writeTestTuples(client);
+        TestTuples testTuples = writeTestTuples(client);
 
-        var checkBulkPermissionsRequest = CheckBulkPermissionsRequest.newBuilder()
+        CheckBulkPermissionsRequest checkBulkPermissionsRequest = CheckBulkPermissionsRequest.newBuilder()
                 .setConsistency(fullyConsistent)
                 .addItems(CheckBulkPermissionsRequestItem.newBuilder()
                         .setResource(testTuples.postOne)
@@ -183,7 +190,7 @@ public class V1ClientTest {
                         .setSubject(testTuples.emilia))
                 .build();
 
-        var response = client.permissionsService.checkBulkPermissions(checkBulkPermissionsRequest);
+        CheckBulkPermissionsResponse response = client.permissionsService.checkBulkPermissions(checkBulkPermissionsRequest);
         assertThat(response.getPairsList()).hasSize(2);
         assertThat(response.getPairs(0).getItem().getPermissionship()).isEqualTo(CheckPermissionResponse.Permissionship.PERMISSIONSHIP_HAS_PERMISSION);
         assertThat(response.getPairs(1).getItem().getPermissionship()).isEqualTo(CheckPermissionResponse.Permissionship.PERMISSIONSHIP_HAS_PERMISSION);
@@ -191,16 +198,16 @@ public class V1ClientTest {
 
     @Test
     public void testBulkImport() throws InterruptedException {
-        var client = new TestClient();
+        TestClient client = new TestClient();
         writeTestSchema(client);
         writeTestTuples(client);
 
         // Validate export
-        var exportCall = client.permissionsService.exportBulkRelationships(ExportBulkRelationshipsRequest.newBuilder()
+        Iterator<ExportBulkRelationshipsResponse> exportCall = client.permissionsService.exportBulkRelationships(ExportBulkRelationshipsRequest.newBuilder()
                         .setConsistency(fullyConsistent)
                 .build());
 
-        var relations = new HashSet<Relationship>();
+        HashSet<Relationship> relations = new HashSet<Relationship>();
         exportCall.forEachRemaining(response ->
             relations.addAll(response.getRelationshipsList()));
 
@@ -208,7 +215,7 @@ public class V1ClientTest {
 
         // Note that this has a different preshared key
         // Validate import
-        var emptyClient = new TestClient();
+        TestClient emptyClient = new TestClient();
         writeTestSchema(emptyClient);
 
         final CountDownLatch done = new CountDownLatch(1);
@@ -236,8 +243,8 @@ public class V1ClientTest {
         }
 
         // Do the import
-        var importObserver = new ImportBulkObserver();
-        var wrappedObserver = client.asyncPermissionsService.importBulkRelationships(importObserver);
+        ImportBulkObserver importObserver = new ImportBulkObserver();
+        StreamObserver<ImportBulkRelationshipsRequest> wrappedObserver = client.asyncPermissionsService.importBulkRelationships(importObserver);
         wrappedObserver.onNext(ImportBulkRelationshipsRequest.newBuilder()
                 .addAllRelationships(relations).build());
         wrappedObserver.onCompleted();
@@ -245,11 +252,11 @@ public class V1ClientTest {
         done.await();
 
         // Validate that everything was loaded
-        var postImportExportCall = client.permissionsService.exportBulkRelationships(ExportBulkRelationshipsRequest.newBuilder()
+        Iterator<ExportBulkRelationshipsResponse> postImportExportCall = client.permissionsService.exportBulkRelationships(ExportBulkRelationshipsRequest.newBuilder()
                 .setConsistency(fullyConsistent)
                 .build());
 
-        var importedRelations = new HashSet<Relationship>();
+        HashSet<Relationship> importedRelations = new HashSet<Relationship>();
         postImportExportCall.forEachRemaining(response ->
             importedRelations.addAll(response.getRelationshipsList()));
 
@@ -260,10 +267,10 @@ public class V1ClientTest {
 
 
     private TestTuples writeTestTuples(TestClient client) {
-        var emilia = SubjectReference.newBuilder().setObject(ObjectReference.newBuilder().setObjectId("emilia").setObjectType("user").build()).build();
-        var beatrice = SubjectReference.newBuilder().setObject(ObjectReference.newBuilder().setObjectId("beatrice").setObjectType("user").build()).build();
-        var postOne = ObjectReference.newBuilder().setObjectId("post-one").setObjectType("post").build();
-        var postTwo = ObjectReference.newBuilder().setObjectId("post-two").setObjectType("post").build();
+        SubjectReference emilia = SubjectReference.newBuilder().setObject(ObjectReference.newBuilder().setObjectId("emilia").setObjectType("user").build()).build();
+        SubjectReference beatrice = SubjectReference.newBuilder().setObject(ObjectReference.newBuilder().setObjectId("beatrice").setObjectType("user").build()).build();
+        ObjectReference postOne = ObjectReference.newBuilder().setObjectId("post-one").setObjectType("post").build();
+        ObjectReference postTwo = ObjectReference.newBuilder().setObjectId("post-two").setObjectType("post").build();
         WriteRelationshipsRequest.Builder builder = WriteRelationshipsRequest.newBuilder()
                 .addUpdates(
                         RelationshipUpdate.newBuilder()
@@ -306,22 +313,18 @@ public class V1ClientTest {
     }
 
     private void writeTestSchema(TestClient client) {
-        String schema = """
-                caveat likes_harry_potter(likes bool) {
-                    likes == true
-                }
-                
-                definition post {
-                    relation writer: user
-                    relation reader: user
-                    relation caveated_reader: user with likes_harry_potter
-                
-                    permission write = writer
-                    permission view = reader + writer
-                    permission view_as_fan = caveated_reader + writer
-                }
-                definition user {}
-                """;
+        String schema = "caveat likes_harry_potter(likes bool) {\n"
+                + "likes == true\n"
+                + "}\n"
+                + "definition post {\n"
+                + "relation writer: user\n"
+                + "relation reader: user\n"
+                + "relation caveated_reader: user with likes_harry_potter\n"
+                + "permission write = writer\n"
+                + "permission view = reader + writer\n"
+                + "permission view_as_fan = caveated_reader + writer\n"
+                + "}\n"
+                + "definition user {}";
         writeSchema(client, schema);
     }
 
