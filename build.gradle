@@ -149,6 +149,7 @@ configurations {
 // Test things
 dependencies {
   intTestImplementation "junit:junit:4.13.2"
+    intTestImplementation "org.assertj:assertj-core:3.26.3"
 }
 
 tasks.register('integrationTest', Test) {
