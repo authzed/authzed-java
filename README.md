@@ -51,7 +51,7 @@ Most commonly, if you are using [Maven] you can add the following to your pom.xm
     <dependency>
         <groupId>com.authzed.api</groupId>
         <artifactId>authzed</artifactId>
-        <version>v1.0.0</version>
+        <version>v1.1.0</version>
     </dependency>
     <dependency>
         <groupId>io.grpc</groupId>
