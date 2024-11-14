@@ -1,38 +1,46 @@
+---
 name: "Publish to Maven"
-on:
-  push:
-    tags:
-    - '*'
+on:  # yamllint disable-line rule:truthy
+  release:
+    types:
+      - "published"
 jobs:
   publish:
     name: "Publish to Maven"
     runs-on: "ubuntu-latest"
     steps:
-    - uses: "actions/checkout@v4"
-    - uses: "actions/setup-java@v4"
-      with:
-        distribution: "adopt"
-        java-package: "jdk"
-        java-version: "17" # LTS
-    - uses: "bufbuild/buf-setup-action@v1"
-      with:
-        version: "1.18.0"
-        github_token: ${{ github.token }}
-    - name: "Publish to Sonatype"
-      env:
-        ORG_GRADLE_PROJECT_signingKey: "${{ secrets.SIGNING_KEY_ARMORED }}"
-        ORG_GRADLE_PROJECT_signingPassword: "${{ secrets.SIGNING_PASSWORD }}"
-        ORG_GRADLE_PROJECT_sonatypeUsername: "${{ secrets.SONATYPE_USERNAME }}"
-        ORG_GRADLE_PROJECT_sonatypePassword: "${{ secrets.SONATYPE_PASSWORD }}"
-      run: |
-        export ORG_GRADLE_PROJECT_release=${GITHUB_REF#refs/tags/}
-        ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
-    - name: Publish JavaDoc
-      uses: MathieuSoysal/Javadoc-publisher.yml@v2.5.0
-      with:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        javadoc-branch: javadoc
-        java-version: 17
-        project: gradle
-        target-folder: docs
-        custom-command: gradle javadoc -Prelease=${GITHUB_REF#refs/tags/}
+      - uses: "actions/checkout@v4"
+      - uses: "actions/setup-java@v4"
+        with:
+          distribution: "adopt"
+          java-package: "jdk"
+          java-version: "17"  # LTS
+      - uses: "bufbuild/buf-setup-action@v1"
+        with:
+          version: "1.18.0"
+          github_token: ${{ github.token }}
+      # Store the version, stripping any v-prefix
+      # This lets us use v-prefixed releases
+      - name: Write release version
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          echo Version: $VERSION
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+      - name: "Publish to Sonatype"
+        env:
+          ORG_GRADLE_PROJECT_signingKey: "${{ secrets.SIGNING_KEY_ARMORED }}"
+          ORG_GRADLE_PROJECT_signingPassword: "${{ secrets.SIGNING_PASSWORD }}"
+          ORG_GRADLE_PROJECT_sonatypeUsername: "${{ secrets.SONATYPE_USERNAME }}"
+          ORG_GRADLE_PROJECT_sonatypePassword: "${{ secrets.SONATYPE_PASSWORD }}"
+        run: |
+          export ORG_GRADLE_PROJECT_release=${VERSION}
+          ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
+      - name: Publish JavaDoc
+        uses: MathieuSoysal/Javadoc-publisher.yml@v2.5.0
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          javadoc-branch: javadoc
+          java-version: 17
+          project: gradle
+          target-folder: docs
+          custom-command: gradle javadoc -Prelease=${VERSION}
