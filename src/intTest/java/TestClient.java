@@ -7,6 +7,7 @@ import io.grpc.ManagedChannelBuilder;
 
 import java.util.Random;
 
+// TestClient
 public class TestClient {
     private static final String tokenPrefix = "tc_test_token";
 
