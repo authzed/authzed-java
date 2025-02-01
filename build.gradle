@@ -83,8 +83,8 @@ tasks.sourcesJar {
 // All it does is complain about generated code.
 javadoc { options.addStringOption('Xdoclint:none', '-quiet') }
 
-def grpcVersion = "1.69.0"
-def protocVersion = "4.29.2"
+def grpcVersion = "1.70.0"
+def protocVersion = "4.29.3"
 def authzedProtoCommit = "v1.40.0"
 def bufDir = "${buildDir}/buf"
 def protocPlatformTag = project.findProperty('protoc_platform') ? ":${protoc_platform}" : ""
@@ -149,7 +149,7 @@ configurations {
 // Test things
 dependencies {
   intTestImplementation "junit:junit:4.13.2"
-    intTestImplementation "org.assertj:assertj-core:3.27.0"
+    intTestImplementation "org.assertj:assertj-core:3.27.3"
 }
 
 tasks.register('integrationTest', Test) {
