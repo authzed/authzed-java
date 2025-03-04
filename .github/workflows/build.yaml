@@ -7,6 +7,13 @@ on:
   pull_request:
     branches:
     - "*"
+    types:
+      # NOTE: these are the defaults
+      - opened
+      - synchronize
+      - reopened
+      # NOTE: we add this to let the conversion from draft trigger the workflows
+      - ready_for_review
   merge_group:
     types:
       - "checks_requested"
@@ -15,7 +22,10 @@ jobs:
     runs-on: "ubuntu-latest"
     strategy:
       matrix:
-        java: [ 8, 17, 19 ] # Oldest, LTS, Latest
+        java:
+          - 8 # Oldest
+          - 21 # LTS
+          - 24 # Latest
     name: "Java ${{ matrix.java }} Build"
     steps:
     - uses: "actions/checkout@v4"
@@ -35,7 +45,10 @@ jobs:
     runs-on: "ubuntu-latest"
     strategy:
       matrix:
-        java: [ 8, 17, 19 ] # Oldest, LTS, Latest
+        java:
+          - 8 # Oldest
+          - 21 # LTS
+          - 24 # Latest
     name: "Java ${{ matrix.java }} Test"
     steps:
       - uses: "actions/checkout@v4"
