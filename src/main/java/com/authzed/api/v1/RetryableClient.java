@@ -174,13 +174,11 @@ public class RetryableClient {
     /**
      * RetryableBulkImportRelationships is a wrapper around BulkImportRelationships.
      * It retries the bulk import with different conflict strategies in case of failure.
-     * <p>
+     * 
      * The conflict strategy can be one of:
-     * <ul>
-     *   <li>FAIL - will return an error if any duplicate relationships are found.</li>
-     *   <li>SKIP - will ignore duplicates and continue with the import.</li>
-     *   <li>TOUCH - will retry the import with TOUCH semantics in case of duplicates.</li>
-     * </ul>
+     * - FAIL - will return an error if any duplicate relationships are found.
+     * - SKIP - will ignore duplicates and continue with the import.
+     * - TOUCH - will retry the import with TOUCH semantics in case of duplicates.
      * 
      * @param relationships The relationships to import
      * @param conflictStrategy The conflict strategy to use
@@ -196,13 +194,11 @@ public class RetryableClient {
     /**
      * RetryableBulkImportRelationships is a wrapper around BulkImportRelationships.
      * It retries the bulk import with different conflict strategies in case of failure.
-     * <p>
+     * 
      * The conflict strategy can be one of:
-     * <ul>
-     *   <li>FAIL - will return an error if any duplicate relationships are found.</li>
-     *   <li>SKIP - will ignore duplicates and continue with the import.</li>
-     *   <li>TOUCH - will retry the import with TOUCH semantics in case of duplicates.</li>
-     * </ul>
+     * - FAIL - will return an error if any duplicate relationships are found.
+     * - SKIP - will ignore duplicates and continue with the import.
+     * - TOUCH - will retry the import with TOUCH semantics in case of duplicates.
      * 
      * @param relationships The relationships to import
      * @param conflictStrategy The conflict strategy to use
@@ -250,24 +246,31 @@ public class RetryableClient {
             BulkImportRelationshipsResponse response = responseCollector.await();
             return response.getNumLoaded();
         } catch (Throwable throwable) {
+            logger.log(Level.INFO, "Handling error in retryableBulkImportRelationships: " + throwable.getMessage());
+            
             // Handle the error based on its type and the chosen conflict strategy
             if (isCanceledError(throwable)) {
                 throw new RuntimeException("Request canceled", throwable);
             }
             
-            if (isAlreadyExistsError(throwable) && conflictStrategy == ConflictStrategy.SKIP) {
-                // Skip conflicts - return success
-                return relationships.size();
+            if (isAlreadyExistsError(throwable)) {
+                if (conflictStrategy == ConflictStrategy.SKIP) {
+                    // Skip conflicts - return success
+                    logger.log(Level.INFO, "ALREADY_EXISTS detected with SKIP strategy - returning success");
+                    return relationships.size();
+                } else if (conflictStrategy == ConflictStrategy.TOUCH) {
+                    // Retry with touch semantics
+                    logger.log(Level.INFO, "ALREADY_EXISTS detected with TOUCH strategy - retrying with touch semantics");
+                    return writeBatchesWithRetry(relationships, timeoutSeconds);
+                } else if (conflictStrategy == ConflictStrategy.FAIL) {
+                    throw new RuntimeException("Duplicate relationships found", throwable);
+                }
             }
             
-            if (isRetryableError(throwable) || 
-                    (isAlreadyExistsError(throwable) && conflictStrategy == ConflictStrategy.TOUCH)) {
-                // Retry with touch semantics
+            if (isRetryableError(throwable)) {
+                // Retry with touch semantics for retryable errors regardless of strategy
+                logger.log(Level.INFO, "Retryable error detected - retrying with touch semantics");
                 return writeBatchesWithRetry(relationships, timeoutSeconds);
-            }
-            
-            if (isAlreadyExistsError(throwable) && conflictStrategy == ConflictStrategy.FAIL) {
-                throw new RuntimeException("Duplicate relationships found", throwable);
             }
             
             throw new RuntimeException(
@@ -365,11 +368,29 @@ public class RetryableClient {
             return false;
         }
         
+        // Check direct gRPC status
         if (isGrpcStatusCode(throwable, Status.Code.ALREADY_EXISTS)) {
             return true;
         }
         
-        return containsErrorString(throwable, TX_CONFLICT_STRINGS);
+        // Check error message for "ALREADY_EXISTS" string
+        if (throwable.getMessage() != null && 
+            throwable.getMessage().contains("ALREADY_EXISTS")) {
+            return true;
+        }
+        
+        // Check for transaction conflict strings
+        if (containsErrorString(throwable, TX_CONFLICT_STRINGS)) {
+            return true;
+        }
+        
+        // Check for a wrapped cause
+        Throwable cause = throwable.getCause();
+        if (cause != null && cause != throwable) {
+            return isAlreadyExistsError(cause);
+        }
+        
+        return false;
     }
     
     /**
@@ -380,15 +401,28 @@ public class RetryableClient {
             return false;
         }
         
+        // Check direct gRPC status
         if (isGrpcStatusCode(throwable, Status.Code.UNAVAILABLE, Status.Code.DEADLINE_EXCEEDED)) {
             return true;
         }
         
+        // Check for retryable error strings
         if (containsErrorString(throwable, RETRYABLE_ERROR_STRINGS)) {
             return true;
         }
         
-        return throwable instanceof java.util.concurrent.TimeoutException;
+        // Check for timeout exceptions
+        if (throwable instanceof java.util.concurrent.TimeoutException) {
+            return true;
+        }
+        
+        // Check for a wrapped cause
+        Throwable cause = throwable.getCause();
+        if (cause != null && cause != throwable) {
+            return isRetryableError(cause);
+        }
+        
+        return false;
     }
     
     /**
@@ -399,12 +433,24 @@ public class RetryableClient {
             return false;
         }
         
+        // Check for cancellation exceptions
         if (throwable instanceof java.util.concurrent.CancellationException ||
                 throwable instanceof InterruptedException) {
             return true;
         }
         
-        return isGrpcStatusCode(throwable, Status.Code.CANCELLED);
+        // Check direct gRPC status
+        if (isGrpcStatusCode(throwable, Status.Code.CANCELLED)) {
+            return true;
+        }
+        
+        // Check for a wrapped cause
+        Throwable cause = throwable.getCause();
+        if (cause != null && cause != throwable) {
+            return isCanceledError(cause);
+        }
+        
+        return false;
     }
     
     /**
