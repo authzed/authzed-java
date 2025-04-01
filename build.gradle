@@ -4,7 +4,7 @@ plugins {
   id "signing"
 
   id "io.github.gradle-nexus.publish-plugin" version "2.0.0"
-  id "com.google.protobuf" version "0.9.4"
+  id "com.google.protobuf" version "0.9.5"
 }
 
 repositories {
@@ -83,8 +83,8 @@ tasks.sourcesJar {
 // All it does is complain about generated code.
 javadoc { options.addStringOption('Xdoclint:none', '-quiet') }
 
-def grpcVersion = "1.70.0"
-def protocVersion = "4.29.3"
+def grpcVersion = "1.71.0"
+def protocVersion = "4.30.2"
 def authzedProtoCommit = "v1.40.0"
 def bufDir = "${buildDir}/buf"
 def protocPlatformTag = project.findProperty('protoc_platform') ? ":${protoc_platform}" : ""
