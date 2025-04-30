@@ -96,7 +96,9 @@ sourceSets { main {
 }}
 
 dependencies {
-  implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+  implementation("io.grpc:grpc-protobuf:${grpcVersion}") {
+    exclude group: 'com.google.protobuf', module: 'protobuf-java'
+  }
   implementation "com.google.protobuf:protobuf-java:${protocVersion}"
   implementation "io.grpc:grpc-stub:${grpcVersion}"
   runtimeOnly "io.grpc:grpc-netty-shaded:${grpcVersion}"
