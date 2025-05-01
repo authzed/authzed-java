@@ -56,12 +56,12 @@ Most commonly, if you are using [Maven] you can add the following to your pom.xm
     <dependency>
         <groupId>io.grpc</groupId>
         <artifactId>grpc-api</artifactId>
-        <version>1.71.0</version>
+        <version>1.72.0</version>
     </dependency>
     <dependency>
         <groupId>io.grpc</groupId>
         <artifactId>grpc-stub</artifactId>
-        <version>1.71.0</version>
+        <version>1.72.0</version>
     </dependency>
 </dependencies>
 ```
@@ -71,8 +71,8 @@ If you are using [Gradle] then add the following to your `build.gradle` file:
 ```groovy
 dependencies {
     implementation "com.authzed.api:authzed:v1.0.0"
-    implementation 'io.grpc:grpc-api:1.71.0'
-    implementation 'io.grpc:grpc-stub:1.71.0'
+    implementation 'io.grpc:grpc-api:1.72.0'
+    implementation 'io.grpc:grpc-stub:1.72.0'
 }
 ```
 
