@@ -7,23 +7,24 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.authzed.api.v1.Core;
-import com.authzed.api.v1.Core.ObjectReference;
-import com.authzed.api.v1.Core.Relationship;
-import com.authzed.api.v1.Core.SubjectReference;
-import com.authzed.api.v1.Core.ZedToken;
-import com.authzed.api.v1.PermissionService;
-import com.authzed.api.v1.PermissionService.CheckPermissionRequest;
-import com.authzed.api.v1.PermissionService.Consistency;
-import com.authzed.api.v1.PermissionService.CheckPermissionResponse.Permissionship;
+import com.authzed.api.v1.CheckPermissionRequest;
+import com.authzed.api.v1.CheckPermissionResponse;
+import com.authzed.api.v1.CheckPermissionResponse.Permissionship;
+import com.authzed.api.v1.Consistency;
+import com.authzed.api.v1.ObjectReference;
 import com.authzed.api.v1.PermissionsServiceGrpc;
+import com.authzed.api.v1.ReadSchemaRequest;
+import com.authzed.api.v1.ReadSchemaResponse;
+import com.authzed.api.v1.Relationship;
+import com.authzed.api.v1.RelationshipUpdate;
 import com.authzed.api.v1.SchemaServiceGrpc;
-import com.authzed.api.v1.SchemaServiceOuterClass.ReadSchemaRequest;
-import com.authzed.api.v1.SchemaServiceOuterClass.ReadSchemaResponse;
-import com.authzed.api.v1.SchemaServiceOuterClass.WriteSchemaRequest;
-import com.authzed.api.v1.SchemaServiceOuterClass.WriteSchemaResponse;
+import com.authzed.api.v1.SubjectReference;
+import com.authzed.api.v1.WriteRelationshipsRequest;
+import com.authzed.api.v1.WriteRelationshipsResponse;
+import com.authzed.api.v1.WriteSchemaRequest;
+import com.authzed.api.v1.WriteSchemaResponse;
+import com.authzed.api.v1.ZedToken;
 import com.authzed.grpcutil.BearerToken;
-
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -124,10 +125,10 @@ public class App {
     public String writeRelationship() {
         logger.info("Write relationship...");
 
-        PermissionService.WriteRelationshipsRequest request = PermissionService.WriteRelationshipsRequest.newBuilder()
+        WriteRelationshipsRequest request = WriteRelationshipsRequest.newBuilder()
                 .addUpdates(
-                        com.authzed.api.v1.Core.RelationshipUpdate.newBuilder()
-                                .setOperation(Core.RelationshipUpdate.Operation.OPERATION_CREATE)
+                        RelationshipUpdate.newBuilder()
+                                .setOperation(RelationshipUpdate.Operation.OPERATION_CREATE)
                                 .setRelationship(
                                         Relationship.newBuilder()
                                                 .setResource(
@@ -148,7 +149,7 @@ public class App {
                                 .build())
                 .build();
 
-        PermissionService.WriteRelationshipsResponse response;
+        WriteRelationshipsResponse response;
         try {
             response = permissionsService.writeRelationships(request);
         } catch (Exception e) {
@@ -162,7 +163,7 @@ public class App {
     public Permissionship check(ZedToken zedToken) {
         logger.info("Checking...");
 
-        PermissionService.CheckPermissionRequest request = CheckPermissionRequest.newBuilder()
+        CheckPermissionRequest request = CheckPermissionRequest.newBuilder()
                 .setConsistency(
                         Consistency.newBuilder()
                                 .setAtLeastAsFresh(zedToken)
@@ -183,12 +184,12 @@ public class App {
                 .setPermission("can_comment")
                 .build();
 
-        PermissionService.CheckPermissionResponse response;
+        CheckPermissionResponse response;
         try {
             response = permissionsService.checkPermission(request);
         } catch (Exception e) {
             logger.log(Level.WARNING, "RPC failed: {0}", e.getMessage());
-            return "";
+            return null;
         }
         logger.info("Response: " + response.toString());
         return response.getPermissionship();
