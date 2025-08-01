@@ -83,7 +83,7 @@ tasks.sourcesJar {
 // All it does is complain about generated code.
 javadoc { options.addStringOption('Xdoclint:none', '-quiet') }
 
-def grpcVersion = "1.73.0"
+def grpcVersion = "1.74.0"
 def protocVersion = "4.31.1"
 def authzedProtoCommit = "v1.41.0"
 def bufDir = "${buildDir}/buf"
