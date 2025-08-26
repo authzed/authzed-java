@@ -6,14 +6,9 @@
 [![Discord Server](https://img.shields.io/discord/844600078504951838?color=7289da&logo=discord "Discord Server")](https://discord.gg/jTysUaxXzM)
 [![Twitter](https://img.shields.io/twitter/follow/authzed?color=%23179CF0&logo=twitter&style=flat-square)](https://twitter.com/authzed)
 
-This repository houses the Java client library for [SpiceDB].
-
-[SpiceDB] is a database and service that stores, computes, and validates your application's permissions.
+This repository houses the Java client library for [SpiceDB], a database and service that can store your application's permissions.
 
 Developers create a schema that models their permissions requirements and use a client library, such as this one, to apply the schema to the database, insert data into the database, and query the data to efficiently check permissions in their applications.
-
-Supported client API versions:
-- [v1](https://authzed.com/docs/reference/api#authzedapiv1)
 
 You can find more info on each API on the [SpiceDB API reference documentation].
 Additionally, Protobuf API documentation can be found on the [Buf Registry SpiceDB API repository].
@@ -23,21 +18,16 @@ See [CONTRIBUTING.md] for instructions on contributing and performing common tas
 
 [Authzed]: https://authzed.com
 [SpiceDB]: https://github.com/authzed/spicedb
-[SpiceDB API Reference documentation]: https://authzed.com/docs/reference/api
+[SpiceDB API Reference documentation]: https://authzed.com/docs/spicedb/api/http-api
 [Buf Registry SpiceDB API repository]: https://buf.build/authzed/api/docs/main
 [CONTRIBUTING.md]: CONTRIBUTING.md
 [Javadoc]: https://authzed.github.io/authzed-java/index.html
 
 ## Getting Started
 
-We highly recommend following the **[Protecting Your First App]** guide to learn the latest best practice to integrate an application with SpiceDB.
-
-If you're interested in examples for a specific API version, they can be found in their respective folders in the [examples directory].
+We highly recommend following the **[Protecting Your First App]** guide to learn the latest best practices to integrate an application with SpiceDB.
 
 [Protecting Your First App]: https://authzed.com/docs/guides/first-app
-[examples directory]: /examples
-
-## Basic Usage
 
 ### Installation
 
@@ -70,7 +60,7 @@ If you are using [Gradle] then add the following to your `build.gradle` file:
 
 ```groovy
 dependencies {
-    implementation "com.authzed.api:authzed:v1.0.0"
+    implementation "com.authzed.api:authzed:v1.3.0"
     implementation 'io.grpc:grpc-api:1.72.0'
     implementation 'io.grpc:grpc-stub:1.72.0'
 }
@@ -83,11 +73,6 @@ dependencies {
 
 ### Initializing a client
 
-Because of how [grpc-java] is designed, there is little in terms of abstraction over the gRPC APIs underpinning Authzed.
-A `ManagedChannel` will establish a connection to Authzed that can be shared with _stubs_ for each gRPC service.
-To successfully authenticate with the API, you will have to provide a [Bearer Token] with your own API Token
-from the [Authzed dashboard] or your local SpiceDB instance in place of `t_your_token_here_1234567deadbeef` as 
-`CallCredentials` for each stub:
 
 ```java
 package org.example;
@@ -99,12 +84,16 @@ import io.grpc.ManagedChannelBuilder;
 
 public class PermissionServiceExample {
     public static void main(String[] args) {
+        // establish a connection to Authzed
         ManagedChannel channel = ManagedChannelBuilder
                 .forTarget("grpc.authzed.com:443")
                 .useTransportSecurity()
                 .build();
 
+        // get the bearer token from your Authzed dashboard (or from https://app.authzed.cloud)
         BearerToken bearerToken = new BearerToken("t_your_token_here_1234567deadbeef");
+        
+        // create the client
         PermissionsServiceGrpc.PermissionsServiceBlockingStub permissionsService = PermissionsServiceGrpc
                 .newBlockingStub(channel)
                 .withCallCredentials(bearerToken);
@@ -123,16 +112,16 @@ ManagedChannel channel = ManagedChannelBuilder
 
 [grpc-java]: https://github.com/grpc/grpc-java
 [Bearer Token]: https://authzed.com/docs/reference/api#authentication
-[Authzed dashboard]: https://app.authzed.com/
+[Authzed dashboard]: https://app.authzed.cloud/
 
-### Performing an API call
+### Calling `CheckPermission`
 
 Request and Response types are located in their respective gRPC Service packages and common types can be found in the Core package.
 Referring to the [Authzed ProtoBuf Documentation] is useful for discovering these APIs.
 
 Because of the verbosity of these types, we recommend writing your own functions/methods to create these types from your existing application's models.
 
-The following example initializes a permission client, performs a `CheckPermission` call and prints the result
+The following example initializes a permission client, performs a `CheckPermission` call and prints the result.
 
 [Authzed Protobuf Documentation]: https://buf.build/authzed/api/docs/main
 
@@ -188,3 +177,10 @@ public class ClientExample {
     }
 }
 ```
+
+
+### More examples
+
+See the [examples directory] for more code snippets.
+
+[examples directory]: /examples
