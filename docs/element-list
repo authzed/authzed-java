@@ -1,7 +1,8 @@
+build.buf.validate
 com.authzed.api.materialize.v0
-com.authzed.api.v0
 com.authzed.api.v1
-com.authzed.api.v1alpha1
 com.authzed.grpcutil
+com.google.api
+com.google.rpc
 grpc.gateway.protoc_gen_openapiv2.options
 io.envoyproxy.pgv.validate
