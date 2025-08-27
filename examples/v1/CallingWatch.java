@@ -10,6 +10,8 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 // Installation
 // https://search.maven.org/artifact/com.authzed.api/authzed
@@ -33,6 +35,26 @@ public class App {
         ManagedChannel channel = ManagedChannelBuilder
                 .forTarget(target)
                 .useTransportSecurity() // if not using TLS, replace with .usePlaintext()
+                .disableServiceConfigLookUp()
+                .defaultServiceConfig(Map.of(
+                        "methodConfig", List.of(
+                                Map.of(
+                                        "name",  List.of(
+                                                Map.of(
+                                                        "service", "authzed.api.v1.WatchService",
+                                                        "method", "Watch"
+                                                )
+                                        ),
+                                        "retryPolicy", Map.of(
+                                                "maxAttempts", "5",
+                                                "initialBackoff", "1s",
+                                                "backoffMultiplier", "4.0",
+                                                "maxBackoff", "30s",
+                                                "retryableStatusCodes", List.of("UNAVAILABLE", "INTERNAL")
+                                        )
+                                )
+                        )
+                ))
                 .build();
 
         ZedToken lastZedToken = ZedToken.newBuilder().setToken("").build();
