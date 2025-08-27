@@ -60,7 +60,7 @@ If you are using [Gradle] then add the following to your `build.gradle` file:
 
 ```groovy
 dependencies {
-    implementation "com.authzed.api:authzed:v1.3.0"
+    implementation "com.authzed.api:authzed:1.4.1"
     implementation 'io.grpc:grpc-api:1.72.0'
     implementation 'io.grpc:grpc-stub:1.72.0'
 }

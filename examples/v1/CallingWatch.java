@@ -10,8 +10,6 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 // Installation
 // https://search.maven.org/artifact/com.authzed.api/authzed
@@ -35,60 +33,28 @@ public class App {
         ManagedChannel channel = ManagedChannelBuilder
                 .forTarget(target)
                 .useTransportSecurity() // if not using TLS, replace with .usePlaintext()
-                .disableServiceConfigLookUp()
-                .defaultServiceConfig(Map.of(
-                        "methodConfig", List.of(
-                                Map.of(
-                                        "name",  List.of(
-                                                Map.of(
-                                                        "service", "authzed.api.v1.WatchService",
-                                                        "method", "Watch"
-                                                )
-                                        ),
-                                        "retryPolicy", Map.of(
-                                                "maxAttempts", "5",
-                                                "initialBackoff", "1s",
-                                                "backoffMultiplier", "4.0",
-                                                "maxBackoff", "30s",
-                                                "retryableStatusCodes", List.of("UNAVAILABLE", "INTERNAL")
-                                        )
-                                )
-                        )
-                ))
                 .build();
 
-        ZedToken lastZedToken = ZedToken.newBuilder().setToken("").build();
+        try {
+            WatchRequest request = WatchRequest.
+                    newBuilder()
+                    .addOptionalUpdateKinds(com.authzed.api.v1.WatchKind.WATCH_KIND_INCLUDE_CHECKPOINTS)
+                    .build();
 
-        while(true) {
-            try {
-                WatchRequest.Builder builder = WatchRequest.newBuilder();
+            Iterator<WatchResponse> watchStream = watchClient.watch(request);
 
-                if (!lastZedToken.getToken().isEmpty()) {
-                    builder.setOptionalStartCursor(lastZedToken);
-                }
-
-                WatchRequest request = builder.build();
-
-                Iterator<WatchResponse> watchStream = watchClient.watch(request);
-
-                while (watchStream.hasNext()) {
-                    WatchResponse msg = watchStream.next();
-                    System.out.println("Received watch response: " + msg);
-
-                    if (!msg.getChangesThrough().getToken().isEmpty()) {
-                        lastZedToken = msg.getChangesThrough();
+            while (watchStream.hasNext()) {
+                WatchResponse msg = watchStream.next();
+                if (msg.getUpdatesCount() > 0) {
+                    for (var update : msg.getUpdatesList()) {
+                        System.out.println("Received update: " + update);
                     }
-                }
-
-            } catch (Exception e) {
-                if (e instanceof StatusRuntimeException sre && (sre.getStatus().getCode().equals(Status.UNAVAILABLE.getCode()) ||
-                        sre.getStatus().getCode().equals(Status.INTERNAL.getCode()))) {
-                    // Stream probably got disconnected after inactivity. Retry
                 } else {
-                    System.out.println("Error calling watch: " + e.getMessage());
-                    return;
+                    System.out.println("No changes made in SpiceDB");
                 }
             }
+        } catch (Exception e) {
+            System.out.println("Error calling watch: " + e.getMessage());
         }
     }
 }
