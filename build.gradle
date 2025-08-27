@@ -105,20 +105,8 @@ dependencies {
   compileOnly "org.apache.tomcat:annotations-api:6.0.53"
 }
 
-task validateProtos(type: Exec) {
-  mkdir bufDir
-  commandLine("buf", "export", "--exclude-imports", "buf.build/envoyproxy/protoc-gen-validate", "-o", bufDir)
-}
-
-task gatewayProtos(type: Exec) {
-  mkdir bufDir
-  commandLine("buf", "export", "--exclude-imports", "buf.build/grpc-ecosystem/grpc-gateway", "-o", bufDir)
-}
-
 task authzedProtos(type: Exec) {
-  dependsOn validateProtos
-  dependsOn gatewayProtos
-  commandLine("buf", "export", "--exclude-imports", "buf.build/authzed/api:${authzedProtoCommit}", "-o", bufDir)
+  commandLine("buf", "export", "buf.build/authzed/api:${authzedProtoCommit}", "-o", bufDir)
 }
 
 protobuf {
