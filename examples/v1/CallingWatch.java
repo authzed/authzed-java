@@ -35,26 +35,47 @@ public class App {
                 .useTransportSecurity() // if not using TLS, replace with .usePlaintext()
                 .build();
 
-        try {
-            WatchRequest request = WatchRequest.
-                    newBuilder()
-                    .addOptionalUpdateKinds(com.authzed.api.v1.WatchKind.WATCH_KIND_INCLUDE_CHECKPOINTS)
-                    .build();
+        ZedToken lastZedToken = ZedToken.newBuilder().setToken("").build();
 
-            Iterator<WatchResponse> watchStream = watchClient.watch(request);
+        while(true) {
+            try {
+                WatchRequest.Builder builder = WatchRequest.newBuilder()
+                        .addOptionalUpdateKinds(com.authzed.api.v1.WatchKind.WATCH_KIND_INCLUDE_CHECKPOINTS);
 
-            while (watchStream.hasNext()) {
-                WatchResponse msg = watchStream.next();
-                if (msg.getUpdatesCount() > 0) {
-                    for (var update : msg.getUpdatesList()) {
-                        System.out.println("Received update: " + update);
+                if (!lastZedToken.getToken().isEmpty()) {
+                    System.out.println("Resuming watch from token: " + lastZedToken.getToken());
+                    builder.setOptionalStartCursor(lastZedToken);
+                }
+
+                WatchRequest request = builder.build();
+
+                Iterator<WatchResponse> watchStream = watchClient.watch(request);
+
+                while (watchStream.hasNext()) {
+                    WatchResponse msg = watchStream.next();
+
+                    if (msg.getUpdatesCount() > 0) {
+                        for (var update : msg.getUpdatesList()) {
+                            System.out.println("Received update: " + update);
+                        }
+                    } else {
+                        System.out.println("No changes made in SpiceDB");
                     }
+
+                    if (!msg.getChangesThrough().getToken().isEmpty()) {
+                        lastZedToken = msg.getChangesThrough();
+                    }
+                }
+
+            } catch (Exception e) {
+                if (e instanceof StatusRuntimeException sre && (sre.getStatus().getCode().equals(Status.UNAVAILABLE.getCode()) ||
+                        (sre.getStatus().getCode().equals(Status.INTERNAL.getCode())) && sre.getMessage().contains("stream timeout"))) {
+                    // Probably a server restart. Retry.
                 } else {
-                    System.out.println("No changes made in SpiceDB");
+                    System.out.println("Error calling watch: " + e.getMessage());
+                    return;
                 }
             }
-        } catch (Exception e) {
-            System.out.println("Error calling watch: " + e.getMessage());
         }
     }
 }
