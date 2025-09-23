@@ -9,7 +9,7 @@ plugins {
 
 repositories {
   // The Google mirror is less flaky than mavenCentral()
-  maven { url "https://maven-central.storage-download.googleapis.com/maven2/" }
+  maven { url = "https://maven-central.storage-download.googleapis.com/maven2/" }
   mavenCentral()
   mavenLocal()
 }
@@ -100,7 +100,13 @@ sourceSets { main {
 
 dependencies {
   implementation("io.grpc:grpc-protobuf:${grpcVersion}") {
+    // We want the same version of protobuf-java as was used in the compilation step,
+    // so we overwrite this dependency.
     exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    // These classes are included by the buf generation step, so we
+    // don't need the external dependency that brings them in. This also ensures
+    // that the definitions line up with what's expected.
+    exclude group: 'com.google.api.grpc', module: 'proto-google-common-protos'
   }
   api "com.google.protobuf:protobuf-java:${protocVersion}"
   implementation "io.grpc:grpc-stub:${grpcVersion}"
