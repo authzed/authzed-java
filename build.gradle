@@ -88,7 +88,7 @@ javadoc { options.addStringOption('Xdoclint:none', '-quiet') }
 
 def grpcVersion = "1.75.0"
 def protocVersion = "4.32.0"
-def authzedProtoCommit = "v1.45.0"
+def authzedProtoCommit = "v1.45.4"
 def bufDir = "${buildDir}/buf"
 def protocPlatformTag = project.findProperty('protoc_platform') ? ":${protoc_platform}" : ""
 
