@@ -106,10 +106,23 @@ dependencies {
   implementation "io.grpc:grpc-stub:${grpcVersion}"
   runtimeOnly "io.grpc:grpc-netty-shaded:${grpcVersion}"
   compileOnly "org.apache.tomcat:annotations-api:6.0.53"
+
+  implementation "com.google.api.grpc:proto-google-common-protos:2.61.3"
+  implementation("build.buf:protovalidate:1.0.0")
+  // In the future this can probably be removed in favor of "protovalidate"
+  // See https://buf.build/blog/protoc-gen-validate-v1-and-v2
+  implementation("build.buf.protoc-gen-validate:pgv-java-stub:1.2.1")
+}
+
+// There is no pre-packaged JAR available that contains the gRPC Gateway proto files
+task gatewayProtos(type: Exec) {
+    mkdir bufDir
+    commandLine("buf", "export", "--exclude-imports", "buf.build/grpc-ecosystem/grpc-gateway", "-o", bufDir)
 }
 
 task authzedProtos(type: Exec) {
-  commandLine("buf", "export", "buf.build/authzed/api:${authzedProtoCommit}", "-o", bufDir)
+  dependsOn gatewayProtos
+  commandLine("buf", "export", "--exclude-imports", "buf.build/authzed/api:${authzedProtoCommit}", "-o", bufDir)
 }
 
 protobuf {
