@@ -112,6 +112,8 @@ dependencies {
     exclude group: 'com.google.protobuf', module: 'protobuf-java-util'
     exclude group: 'com.google.code.gson', module: 'gson'
     exclude group: 'com.google.re2j', module: 're2j'
+    exclude group: 'com.google.code.findbugs', module: 'annotations'
+    exclude group: 'com.google.code.findbugs', module: 'jsr305'
   }
   // In the future this can probably be removed in favor of "protovalidate"
   // See https://buf.build/blog/protoc-gen-validate-v1-and-v2
@@ -123,10 +125,16 @@ dependencies {
   }
 
   api "com.google.protobuf:protobuf-java:${protocVersion}"
-  implementation "com.google.protobuf:protobuf-java-util:${protocVersion}"
-  implementation "com.google.api.grpc:proto-google-common-protos:2.61.3"
+  implementation("com.google.protobuf:protobuf-java-util:${protocVersion}") {
+    exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    exclude group: 'com.google.code.gson', module: 'gson'
+  }
+  implementation("com.google.api.grpc:proto-google-common-protos:2.61.3") {
+    exclude group: 'com.google.protobuf', module: 'protobuf-java'
+  }
   implementation "com.google.code.gson:gson:2.11.0"
   implementation "com.google.re2j:re2j:1.8"
+  implementation "com.google.code.findbugs:jsr305:3.0.2"
 }
 
 // There is no pre-packaged JAR available that contains the gRPC Gateway proto files
