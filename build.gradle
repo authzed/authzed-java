@@ -86,8 +86,8 @@ tasks.sourcesJar {
 // All it does is complain about generated code.
 javadoc { options.addStringOption('Xdoclint:none', '-quiet') }
 
-def grpcVersion = "1.75.0"
-def protocVersion = "4.32.1"
+def grpcVersion = "1.76.0"
+def protocVersion = "4.33.0"
 def authzedProtoCommit = "v1.45.4"
 def bufDir = "${buildDir}/buf"
 def protocPlatformTag = project.findProperty('protoc_platform') ? ":${protoc_platform}" : ""
@@ -107,7 +107,7 @@ dependencies {
   runtimeOnly "io.grpc:grpc-netty-shaded:${grpcVersion}"
   compileOnly "org.apache.tomcat:annotations-api:6.0.53"
 
-  implementation("build.buf:protovalidate:1.0.0") {
+  implementation("build.buf:protovalidate:1.0.1") {
     exclude group: 'com.google.protobuf', module: 'protobuf-java'
     exclude group: 'com.google.protobuf', module: 'protobuf-java-util'
     exclude group: 'com.google.code.gson', module: 'gson'
@@ -129,10 +129,10 @@ dependencies {
     exclude group: 'com.google.protobuf', module: 'protobuf-java'
     exclude group: 'com.google.code.gson', module: 'gson'
   }
-  implementation("com.google.api.grpc:proto-google-common-protos:2.61.3") {
+  implementation("com.google.api.grpc:proto-google-common-protos:2.62.0") {
     exclude group: 'com.google.protobuf', module: 'protobuf-java'
   }
-  implementation "com.google.code.gson:gson:2.11.0"
+  implementation "com.google.code.gson:gson:2.13.2"
   implementation "com.google.re2j:re2j:1.8"
   implementation "com.google.code.findbugs:jsr305:3.0.2"
 }
