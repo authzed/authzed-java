@@ -38,7 +38,7 @@ jobs:
       with:
         setup_only: true
         github_token: ${{ github.token }}
-    - uses: "gradle/actions/wrapper-validation@v4"
+    - uses: "gradle/actions/wrapper-validation@v5"
     - name: "Gradle Build"
       run: "./gradlew build"
   test:
@@ -64,6 +64,6 @@ jobs:
       - uses: "authzed/action-spicedb@v1"
         with:
           version: "latest"
-      - uses: "gradle/actions/wrapper-validation@v4"
+      - uses: "gradle/actions/wrapper-validation@v5"
       - name: "Gradle integrationTest"
         run: "./gradlew integrationTest --info"
