@@ -9,11 +9,11 @@ on:
     - "*"
     types:
       # NOTE: these are the defaults
-      - opened
-      - synchronize
-      - reopened
+      - "opened"
+      - "synchronize"
+      - "reopened"
       # NOTE: we add this to let the conversion from draft trigger the workflows
-      - ready_for_review
+      - "ready_for_review"
   merge_group:
     types:
       - "checks_requested"

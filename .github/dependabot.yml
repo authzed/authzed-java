@@ -7,6 +7,10 @@ updates:
     groups:
       gradle:
         patterns: ["*"]
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -14,3 +18,7 @@ updates:
     groups:
       github-actions:
         patterns: ["*"]
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
