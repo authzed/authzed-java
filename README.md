@@ -41,17 +41,17 @@ Most commonly, if you are using [Maven] you can add the following to your pom.xm
     <dependency>
         <groupId>com.authzed.api</groupId>
         <artifactId>authzed</artifactId>
-        <version>1.5.0</version>
+        <version>1.5.4</version>
     </dependency>
     <dependency>
         <groupId>io.grpc</groupId>
         <artifactId>grpc-api</artifactId>
-        <version>1.72.0</version>
+        <version>1.75.0</version>
     </dependency>
     <dependency>
         <groupId>io.grpc</groupId>
         <artifactId>grpc-stub</artifactId>
-        <version>1.72.0</version>
+        <version>1.75.0</version>
     </dependency>
 </dependencies>
 ```
@@ -60,9 +60,9 @@ If you are using [Gradle] then add the following to your `build.gradle` file:
 
 ```groovy
 dependencies {
-    implementation "com.authzed.api:authzed:1.4.1"
-    implementation 'io.grpc:grpc-api:1.72.0'
-    implementation 'io.grpc:grpc-stub:1.72.0'
+    implementation "com.authzed.api:authzed:1.5.4"
+    implementation 'io.grpc:grpc-api:1.75.0'
+    implementation 'io.grpc:grpc-stub:1.75.0'
 }
 ```
 
@@ -70,6 +70,66 @@ dependencies {
 [Maven Central Artifact Page]: https://search.maven.org/artifact/com.authzed.api/authzed
 [Maven]: https://maven.apache.org
 [Gradle]: https://gradle.org/
+
+#### Maven Dependency Convergence
+
+If you use Maven's [`maven-enforcer-plugin`](https://maven.apache.org/enforcer/maven-plugin/) with the `dependencyConvergence` rule, you should use Maven's `<dependencyManagement>` section to centralize version control and avoid conflicts.
+
+**Recommended approach** - Use the [gRPC BOM](https://central.sonatype.com/artifact/io.grpc/grpc-bom):
+
+```xml
+<dependencyManagement>
+    <dependencies>
+        <!-- Import gRPC BOM for centralized version management -->
+        <!-- authzed-java 1.5.4 uses gRPC 1.75.0 -->
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-bom</artifactId>
+            <version>1.75.0</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+
+        <!-- Optional: Pin j2objc-annotations to resolve convergence if needed -->
+        <dependency>
+            <groupId>com.google.j2objc</groupId>
+            <artifactId>j2objc-annotations</artifactId>
+            <version>2.8</version>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+
+<dependencies>
+    <dependency>
+        <groupId>com.authzed.api</groupId>
+        <artifactId>authzed</artifactId>
+        <version>1.5.4</version>
+    </dependency>
+    <!-- gRPC dependencies - versions managed by BOM -->
+    <dependency>
+        <groupId>io.grpc</groupId>
+        <artifactId>grpc-api</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>io.grpc</groupId>
+        <artifactId>grpc-stub</artifactId>
+    </dependency>
+</dependencies>
+```
+
+This approach ensures all gRPC modules use consistent versions across your project.
+
+**Important notes**:
+- The gRPC BOM only manages `io.grpc:*` artifacts; it does not manage `proto-google-common-protos` or `j2objc-annotations`
+- authzed-java 1.5.4 uses gRPC 1.75.0 and explicitly declares proto-google-common-protos 2.61.3
+- You may need to pin j2objc-annotations:2.8 if you encounter convergence warnings (this version comes from protobuf-java-util, not the gRPC BOM)
+- gRPC minor releases are generally source compatible, but check the [gRPC release notes](https://github.com/grpc/grpc-java/releases) before upgrading
+
+**For detailed guidance**, including troubleshooting and alternative approaches, see [MAVEN_BEST_PRACTICES.md](MAVEN_BEST_PRACTICES.md).
+
+**References:**
+- [Maven Dependency Management Guide](https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html)
+- [Maven Enforcer Plugin - Dependency Convergence](https://maven.apache.org/enforcer/enforcer-rules/dependencyConvergence.html)
 
 ### Initializing a client
 
