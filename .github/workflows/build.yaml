@@ -23,9 +23,9 @@ jobs:
     strategy:
       matrix:
         java: # https://endoflife.date/oracle-jdk
-          - 8 # Oldest
+          - 17 # Oldest
           - 21 # LTS
-          - 24 # Latest
+          - 25 # Latest (though also LTS)
     name: "Java ${{ matrix.java }} Build"
     steps:
     - uses: "actions/checkout@v5"
