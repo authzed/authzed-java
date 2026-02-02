@@ -9,7 +9,7 @@ plugins {
 
 repositories {
   // The Google mirror is less flaky than mavenCentral()
-  maven { url "https://maven-central.storage-download.googleapis.com/maven2/" }
+  maven { url = "https://maven-central.storage-download.googleapis.com/maven2/" }
   mavenCentral()
   mavenLocal()
 }
@@ -73,21 +73,23 @@ signing {
 java {
   withJavadocJar()
   withSourcesJar()
-  sourceCompatibility = JavaVersion.VERSION_1_8
-  targetCompatibility = JavaVersion.VERSION_1_8
+  sourceCompatibility = JavaVersion.VERSION_17
+  targetCompatibility = JavaVersion.VERSION_17
 }
 
 tasks.sourcesJar {
   // This is necessary to keep gradle from barking at you
   // about an implicit dependency between these two tasks.
   dependsOn tasks.compileJava
+  dependsOn tasks.compileTestJava
+  dependsOn tasks.generateTestProto
 }
 
 // All it does is complain about generated code.
 javadoc { options.addStringOption('Xdoclint:none', '-quiet') }
 
 def grpcVersion = "1.78.0"
-def protocVersion = "4.33.2"
+def protocVersion = "4.33.5"
 def authzedProtoCommit = "v1.45.4"
 def bufDir = "${buildDir}/buf"
 def protocPlatformTag = project.findProperty('protoc_platform') ? ":${protoc_platform}" : ""
@@ -129,7 +131,7 @@ dependencies {
     exclude group: 'com.google.protobuf', module: 'protobuf-java'
     exclude group: 'com.google.code.gson', module: 'gson'
   }
-  implementation("com.google.api.grpc:proto-google-common-protos:2.63.2") {
+  implementation("com.google.api.grpc:proto-google-common-protos:2.65.0") {
     exclude group: 'com.google.protobuf', module: 'protobuf-java'
   }
   implementation "com.google.code.gson:gson:2.13.2"
@@ -178,7 +180,7 @@ configurations {
 // Test things
 dependencies {
   intTestImplementation "junit:junit:4.13.2"
-    intTestImplementation "org.assertj:assertj-core:3.27.6"
+    intTestImplementation "org.assertj:assertj-core:3.27.7"
 }
 
 tasks.register('integrationTest', Test) {

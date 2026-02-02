@@ -1,10 +1,6 @@
 ---
 name: "Lint"
 on: # yamllint disable-line rule:truthy
-  push:
-    branches:
-      - "!dependabot/*"
-      - "main"
   pull_request:
     branches: ["*"]
   merge_group:
