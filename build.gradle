@@ -9,7 +9,7 @@ plugins {
 
 repositories {
   // The Google mirror is less flaky than mavenCentral()
-  maven { url "https://maven-central.storage-download.googleapis.com/maven2/" }
+  maven { url = "https://maven-central.storage-download.googleapis.com/maven2/" }
   mavenCentral()
   mavenLocal()
 }
@@ -73,14 +73,16 @@ signing {
 java {
   withJavadocJar()
   withSourcesJar()
-  sourceCompatibility = JavaVersion.VERSION_1_8
-  targetCompatibility = JavaVersion.VERSION_1_8
+  sourceCompatibility = JavaVersion.VERSION_17
+  targetCompatibility = JavaVersion.VERSION_17
 }
 
 tasks.sourcesJar {
   // This is necessary to keep gradle from barking at you
   // about an implicit dependency between these two tasks.
   dependsOn tasks.compileJava
+  dependsOn tasks.compileTestJava
+  dependsOn tasks.generateTestProto
 }
 
 // All it does is complain about generated code.

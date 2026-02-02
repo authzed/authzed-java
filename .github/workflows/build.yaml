@@ -1,9 +1,5 @@
 name: "build"
 on:
-  push:
-    branches:
-    - "!dependabot/*"
-    - "*"
   pull_request:
     branches:
     - "*"
