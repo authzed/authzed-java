@@ -4,7 +4,7 @@ plugins {
   id "signing"
 
   id "io.github.gradle-nexus.publish-plugin" version "2.0.0"
-  id "com.google.protobuf" version "0.9.6"
+  id "com.google.protobuf" version "0.10.0"
 }
 
 repositories {
@@ -88,8 +88,8 @@ tasks.sourcesJar {
 // All it does is complain about generated code.
 javadoc { options.addStringOption('Xdoclint:none', '-quiet') }
 
-def grpcVersion = "1.78.0"
-def protocVersion = "4.33.5"
+def grpcVersion = "1.81.0"
+def protocVersion = "4.35.0"
 def authzedProtoCommit = "v1.53.0"
 def bufDir = "${buildDir}/buf"
 def protocPlatformTag = project.findProperty('protoc_platform') ? ":${protoc_platform}" : ""
@@ -109,7 +109,7 @@ dependencies {
   runtimeOnly "io.grpc:grpc-netty-shaded:${grpcVersion}"
   compileOnly "org.apache.tomcat:annotations-api:6.0.53"
 
-  implementation("build.buf:protovalidate:1.1.0") {
+  implementation("build.buf:protovalidate:1.2.2") {
     exclude group: 'com.google.protobuf', module: 'protobuf-java'
     exclude group: 'com.google.protobuf', module: 'protobuf-java-util'
     exclude group: 'com.google.code.gson', module: 'gson'
@@ -119,7 +119,7 @@ dependencies {
   }
   // In the future this can probably be removed in favor of "protovalidate"
   // See https://buf.build/blog/protoc-gen-validate-v1-and-v2
-  implementation("build.buf.protoc-gen-validate:pgv-java-stub:1.3.0") {
+  implementation("build.buf.protoc-gen-validate:pgv-java-stub:1.3.3") {
     exclude group: 'com.google.protobuf', module: 'protobuf-java'
     exclude group: 'com.google.protobuf', module: 'protobuf-java-util'
     exclude group: 'com.google.code.gson', module: 'gson'
@@ -131,10 +131,10 @@ dependencies {
     exclude group: 'com.google.protobuf', module: 'protobuf-java'
     exclude group: 'com.google.code.gson', module: 'gson'
   }
-  implementation("com.google.api.grpc:proto-google-common-protos:2.65.0") {
+  implementation("com.google.api.grpc:proto-google-common-protos:2.71.0") {
     exclude group: 'com.google.protobuf', module: 'protobuf-java'
   }
-  implementation "com.google.code.gson:gson:2.13.2"
+  implementation "com.google.code.gson:gson:2.14.0"
   implementation "com.google.re2j:re2j:1.8"
   implementation "com.google.code.findbugs:jsr305:3.0.2"
 }
