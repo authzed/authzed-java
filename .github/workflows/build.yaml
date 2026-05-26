@@ -42,7 +42,6 @@ jobs:
     strategy:
       matrix:
         java: # https://endoflife.date/oracle-jdk
-          - 8 # Oldest
           - 21 # LTS
           - 24 # Latest
     name: "Java ${{ matrix.java }} Test"
