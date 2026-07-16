@@ -181,6 +181,7 @@ configurations {
 dependencies {
   intTestImplementation "junit:junit:4.13.2"
     intTestImplementation "org.assertj:assertj-core:3.27.7"
+    intTestImplementation "io.grpc:grpc-testing:${grpcVersion}"
 }
 
 tasks.register('integrationTest', Test) {

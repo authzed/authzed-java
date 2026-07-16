@@ -8,6 +8,8 @@ import com.google.protobuf.Value;
 import com.authzed.api.v1.*;
 
 import io.grpc.stub.StreamObserver;
+import io.grpc.testing.GrpcCleanupRule;
+import org.junit.Rule;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,10 +22,13 @@ drop support, we can update this code.
 public class V1ClientTest {
     private static final Consistency fullyConsistent = Consistency.newBuilder().setFullyConsistent(true).build();
 
+    @Rule
+    public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
+
     @Test
     public void testBasicSchema() {
         // Initialize services
-        TestClient client = new TestClient();
+        TestClient client = new TestClient(grpcCleanup);
         String schema = "definition document {\n"
                 + "relation reader: user\n"
                 + "}\n"
@@ -40,7 +45,7 @@ public class V1ClientTest {
 
     @Test
     public void testSchemaWithCaveats() {
-        TestClient client = new TestClient();
+        TestClient client = new TestClient(grpcCleanup);
         writeTestSchema(client);
     }
 
@@ -48,7 +53,7 @@ public class V1ClientTest {
     // https://github.com/grpc/grpc-java/blob/9071c1ad7c842f4e73b6ae95b71f11c517b177a4/examples/src/main/java/io/grpc/examples/manualflowcontrol/ManualFlowControlClient.java
     @Test
     public void testCheck() {
-        TestClient client = new TestClient();
+        TestClient client = new TestClient(grpcCleanup);
         writeTestSchema(client);
         TestTuples testTuples = writeTestTuples(client);
 
@@ -87,7 +92,7 @@ public class V1ClientTest {
 
     @Test
     public void testCaveatedCheck() {
-        TestClient client = new TestClient();
+        TestClient client = new TestClient(grpcCleanup);
         writeTestSchema(client);
         TestTuples testTuples = writeTestTuples(client);
 
@@ -126,7 +131,7 @@ public class V1ClientTest {
 
     @Test
     public void testLookupResources() {
-        TestClient client = new TestClient();
+        TestClient client = new TestClient(grpcCleanup);
         writeTestSchema(client);
         TestTuples testTuples = writeTestTuples(client);
 
@@ -148,7 +153,7 @@ public class V1ClientTest {
 
     @Test
     public void testLookupSubjects() {
-        TestClient client = new TestClient();
+        TestClient client = new TestClient(grpcCleanup);
         writeTestSchema(client);
         TestTuples testTuples = writeTestTuples(client);
 
@@ -171,7 +176,7 @@ public class V1ClientTest {
 
     @Test
     public void testCheckBulkPermissions() {
-        TestClient client = new TestClient();
+        TestClient client = new TestClient(grpcCleanup);
         writeTestSchema(client);
         TestTuples testTuples = writeTestTuples(client);
 
@@ -195,7 +200,7 @@ public class V1ClientTest {
 
     @Test
     public void testBulkImport() throws InterruptedException {
-        TestClient client = new TestClient();
+        TestClient client = new TestClient(grpcCleanup);
         writeTestSchema(client);
         writeTestTuples(client);
 
@@ -212,7 +217,7 @@ public class V1ClientTest {
 
         // Note that this has a different preshared key
         // Validate import
-        TestClient emptyClient = new TestClient();
+        TestClient emptyClient = new TestClient(grpcCleanup);
         writeTestSchema(emptyClient);
 
         final CountDownLatch done = new CountDownLatch(1);

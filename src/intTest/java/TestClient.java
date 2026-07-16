@@ -4,6 +4,7 @@ import com.authzed.api.v1.SchemaServiceGrpc;
 import com.authzed.grpcutil.BearerToken;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.testing.GrpcCleanupRule;
 
 import java.util.Random;
 
@@ -14,8 +15,11 @@ public class TestClient {
     public PermissionsServiceGrpc.PermissionsServiceBlockingStub permissionsService;
     public PermissionsServiceGrpc.PermissionsServiceStub asyncPermissionsService;
     public ExperimentalServiceGrpc.ExperimentalServiceBlockingStub experimentalService;
-    public TestClient() {
-        ManagedChannel channel = ManagedChannelBuilder.forTarget("localhost:50051").usePlaintext().build();
+    public TestClient(GrpcCleanupRule cleanupRule) {
+        // Registering the channel guarantees it is shut down when the test finishes:
+        // https://grpc.io/blog/graceful-cleanup-junit-tests/
+        ManagedChannel channel = cleanupRule.register(
+                ManagedChannelBuilder.forTarget("localhost:50051").usePlaintext().build());
         String token = generateToken();
         schemaService = SchemaServiceGrpc.newBlockingStub(channel)
                 .withCallCredentials(new BearerToken(token));
