@@ -86,7 +86,12 @@ tasks.sourcesJar {
 }
 
 // All it does is complain about generated code.
-javadoc { options.addStringOption('Xdoclint:none', '-quiet') }
+javadoc {
+  options.addStringOption('Xdoclint:none', '-quiet')
+  // Keep gradle from barking about an implicit dependency on the generated test
+  // sources, which live under the same build/generated directory.
+  dependsOn tasks.compileTestJava
+}
 
 def grpcVersion = "1.78.0"
 def protocVersion = "4.33.5"
@@ -179,6 +184,8 @@ configurations {
 
 // Test things
 dependencies {
+  testImplementation "junit:junit:4.13.2"
+  testImplementation "org.assertj:assertj-core:3.27.7"
   intTestImplementation "junit:junit:4.13.2"
     intTestImplementation "org.assertj:assertj-core:3.27.7"
 }
